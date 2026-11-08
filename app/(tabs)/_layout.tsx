@@ -5,15 +5,22 @@
  * - Centro: Inicio.
  * - Derecha: Gestión (rutinas y ejercicios).
  *
- * El orden de las pestañas lo decide el orden de los `Tabs.Screen`.
+ * Protección: si no hay sesión, `Redirect` lleva al acceso. Así ninguna
+ * pantalla privada se muestra sin usuario, ni siquiera un instante.
  */
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 
+import { useAuth } from '@/modules/auth';
 import { useTheme } from '@/ui/theme';
 
 export default function TabsLayout() {
   const { colors } = useTheme();
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) {
+    return <Redirect href="/inicio-sesion" />;
+  }
 
   return (
     <Tabs

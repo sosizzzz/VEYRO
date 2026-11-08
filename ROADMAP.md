@@ -3,7 +3,7 @@
 ## Plan de desarrollo por fases
 
 **Regla:** una fase cada vez. No se empieza la siguiente sin aprobar y probar la anterior.
-**Estado global:** fase 0 completada en código y verificada con compilación, tests y linter. Falta abrirla en el móvil para darla por terminada.
+**Estado global:** fase 0 completada. Fase 1A completada en código; pendiente de ejecutar la migración en Supabase y probarla en el móvil.
 
 | Estado | Significado |
 |---|---|
@@ -38,19 +38,37 @@
 
 ## Fase 1 · Acceso y perfil
 
+**Estado:** 1A completada en código. Falta ejecutar la migración en Supabase y probarla en el móvil. 1B pendiente.
+
 **Objetivo:** entrar en la app con correo y contraseña y ver tu nombre.
+
+### 1A · Registro, entrada, salida y sesión persistente
 
 **Entregables**
 
-- Registro, inicio y cierre de sesión.
-- Pantalla de verificación de correo y recuperación de contraseña.
-- Tabla `profiles` y creación automática del perfil al registrarse.
-- RLS activo.
-- Ruta protegida: sin sesión, solo se ven las pantallas de acceso.
+- Registro con nombre, correo y contraseña.
+- Inicio y cierre de sesión.
+- Sesión recordada al cerrar y abrir la app.
+- Tabla `profiles` con RLS y creación automática del perfil al registrarse.
+- Rutas protegidas: sin sesión solo se ven las pantallas de acceso.
+- Validaciones en español y tests de las mismas.
 
-**Cómo se prueba:** registro real con un correo, verificación, cierre, reintento con contraseña incorrecta y recuperación.
+**Cómo se prueba:** registro real, comprobar que aparece el nombre en Gestión, cerrar la app y volver a abrir, cerrar sesión e intentar entrar con contraseña incorrecta.
 
 **Riesgos:** RLS mal configurado deja datos expuestos o bloquea al propio usuario. Se prueba con dos cuentas distintas.
+
+### 1B · Recuperación de contraseña y verificación de correo
+
+**Estado:** pendiente.
+
+**Por qué va aparte:** los enlaces de los correos necesitan configuración de enlaces profundos (deep links), que en Expo Go funciona distinto que en una app publicada. Se prueba con calma, sin mezclarlo con el acceso básico.
+
+**Entregables**
+
+- Pantalla de "he olvidado mi contraseña".
+- Envío del correo de recuperación.
+- Enlace de vuelta a la app y pantalla para fijar la nueva contraseña.
+- Manejo del caso "correo sin verificar".
 
 ---
 
