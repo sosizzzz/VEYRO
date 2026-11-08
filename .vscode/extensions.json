@@ -1,1 +1,11 @@
-{ "recommendations": ["expo.vscode-expo-tools"] }
+{
+  // Extensiones recomendadas para VEYRO.
+  // Al abrir la carpeta, VS Code preguntará si quieres instalarlas.
+  "recommendations": [
+    "expo.vscode-expo-tools",    // Arrancar Expo y ver el QR desde VS Code
+    "dbaeumer.vscode-eslint",    // Avisos de errores y malas prácticas
+    "esbenp.prettier-vscode",    // Formato automático del código al guardar
+    "mtxr.sqltools",             // Abrir y consultar SQL (opcional, para ver la migración)
+    "mtxr.sqltools-driver-pg"    // Conector de SQLTools para PostgreSQL/Supabase
+  ]
+}

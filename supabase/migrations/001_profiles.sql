@@ -153,3 +153,5 @@ on conflict (id) do nothing;
 --
 --   select relname, relrowsecurity from pg_class where relname = 'profiles';
 -- ----------------------------------------------------------------------------
+
+select id, display_name, created_at from public.profiles;
