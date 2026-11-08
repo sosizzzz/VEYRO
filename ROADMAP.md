@@ -3,7 +3,7 @@
 ## Plan de desarrollo por fases
 
 **Regla:** una fase cada vez. No se empieza la siguiente sin aprobar y probar la anterior.
-**Estado global:** fase 0 pendiente de inicio. Nada implementado todavía.
+**Estado global:** fase 0 completada en código y verificada con compilación, tests y linter. Falta abrirla en el móvil para darla por terminada.
 
 | Estado | Significado |
 |---|---|
@@ -14,6 +14,8 @@
 ---
 
 ## Fase 0 · Base del proyecto
+
+**Estado:** en curso. Código completo; falta probarla en Expo Go.
 
 **Objetivo:** que la app arranque en blanco, ordenada y con reglas de calidad activas.
 
