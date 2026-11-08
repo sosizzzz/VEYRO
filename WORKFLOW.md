@@ -157,9 +157,25 @@ El resumen muestra: duración, ejercicios completados, ejercicios omitidos, seri
 
 > Nota: más tiempo es mejor solo si el objetivo es de resistencia/duración. Se aplica la misma regla a las tres métricas hasta que se apruebe lo contrario (ver §13).
 
-**Indicadores:** verde = mejora, rojo = empeoramiento, gris = similar.
+**Indicadores por métrica:**
 
-Se muestra un indicador agregado por ejercicio y, al desplegarlo, el detalle por métrica. La lógica vive en `src/domain/performance/` y no en la interfaz.
+| Nivel | Cuándo | Color |
+|---|---|---|
+| Peso mejorado | El peso sube, aunque otra métrica baje | Amarillo |
+| Mejora | Suben repeticiones o tiempo | Verde |
+| Igual | El valor es exactamente el mismo | Gris |
+| Empeoramiento | Baja cualquier métrica | Rojo |
+
+**Resumen por ejercicio:** cantidades por nivel, en orden fijo (amarillo, verde, gris, rojo). Sin puntuación, sin porcentaje y sin color dominante.
+
+Ejemplo: `1 ●` amarillo · `1 ●` verde · `0 ●` gris · `1 ●` rojo.
+
+- Subir peso es siempre amarillo, aunque también suban las repeticiones.
+- Subir peso y bajar repeticiones da amarillo + rojo a la vez. Los niveles nunca se compensan.
+- Solo se muestran los niveles que tengan al menos una métrica.
+- Al desplegar el resumen se muestra cada métrica con sus valores (anterior → actual).
+
+La lógica vive en `src/domain/performance/` y no en la interfaz.
 
 ---
 
@@ -202,8 +218,7 @@ Se muestra un indicador agregado por ejercicio y, al desplegarlo, el detalle por
 ## 14. Pendiente de aprobación
 
 1. Comparación serie con serie vs mejor serie cuando el número de series cambia.
-2. Color del indicador agregado cuando unas métricas mejoran y otras empeoran.
-3. Significado de "tiempo": ¿más segundos es mejor o peor? Depende del tipo de ejercicio.
-4. Catálogo de músculos.
-5. Borrado de rutinas.
-6. Si se permite más de una sesión en curso a la vez.
+2. Significado de "tiempo": ¿más segundos es mejor o peor? Depende del tipo de ejercicio.
+3. Catálogo de músculos.
+4. Borrado de rutinas.
+5. Si se permite más de una sesión en curso a la vez.

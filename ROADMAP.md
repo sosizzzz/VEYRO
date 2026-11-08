@@ -186,12 +186,13 @@
 
 - `domain/performance` con tolerancia 0.
 - Comparación contra la última sesión del mismo ejercicio.
-- Indicador agregado y detalle por métrica.
-- Tests de mejora, empeoramiento e igualdad.
+- Clasificación por niveles: amarillo (peso mejorado), verde, gris, rojo.
+- Resumen por cantidades con puntos de color y detalle por métrica.
+- Tests de los cuatro niveles y del caso peso arriba / repeticiones abajo.
 
-**Cómo se prueba:** repetir un ejercicio con más peso, con menos y con el mismo; los tres colores deben aparecer.
+**Cómo se prueba:** repetir un ejercicio subiendo peso, subiendo solo repeticiones, dejando todo igual y bajando algo. Deben aparecer los cuatro colores y las cantidades correctas.
 
-**Riesgos:** dos puntos siguen pendientes (comparación con distinto número de series y color agregado mixto). **Bloquea el inicio de esta fase.**
+**Riesgos:** queda pendiente cómo comparar cuando cambia el número de series. **Bloquea el inicio de esta fase.**
 
 ---
 

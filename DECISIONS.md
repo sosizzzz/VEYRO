@@ -57,6 +57,13 @@ Formato de cada decisión:
 - **Por qué:** cancelar descarta un entrenamiento en curso; un toque accidental no debe costar la sesión.
 - **Consecuencias:** hay un diálogo de confirmación. Cerrar la app no cancela nada.
 
+### IN-009 · Resumen de comparación por niveles, sin valor único
+
+- **Contexto:** con tolerancia 0 podían coexistir métricas que mejoran y empeoran. Un único color agregado ocultaría información.
+- **Decisión:** el resumen muestra **cantidades por nivel con un punto de color**, en orden fijo: amarillo (peso mejorado), verde (repeticiones o tiempo mejorados), gris (igual) y rojo (empeorado). Solo aparecen los niveles con datos. No hay puntuación ni porcentaje.
+- **Por qué:** un número total obligaría a inventar una equivalencia entre kilos, repeticiones y segundos, que no existe. Las cantidades informan sin mentir. El amarillo separa el peso porque subir carga es un salto de nivel distinto, incluso si se pierden repeticiones.
+- **Consecuencias:** subir peso es siempre amarillo, aunque también suban las repeticiones. Subir peso y bajar repeticiones produce amarillo y rojo simultáneos: no se compensan. Se necesita un componente visual reutilizable para el resumen y una leyenda que explique los colores.
+
 ### PR-001 · Código comentado en lenguaje sencillo
 
 - **Contexto:** quien dirige el proyecto está aprendiendo a programar y necesita entender el código, no solo que funcione.
@@ -117,10 +124,9 @@ Formato de cada decisión:
 ## Pendiente de aprobación (no decidido)
 
 1. Comparación serie con serie frente a mejor serie cuando cambia el número de series.
-2. Indicador agregado cuando hay métricas en direcciones opuestas.
-3. Si "más tiempo" es mejora o empeoramiento según el ejercicio.
-4. Catálogo de músculos.
-5. Borrado de rutinas.
-6. Método de recuperación de contraseña y verificación de correo (forma concreta).
-7. Uso sin conexión de rutinas y ejercicios ya guardados (solo la sesión en curso está garantizada).
-8. Todo lo listado en PROJECT.md §7.7 para sesiones compartidas.
+2. Si "más tiempo" es mejora o empeoramiento según el ejercicio.
+3. Catálogo de músculos.
+4. Borrado de rutinas.
+5. Método de recuperación de contraseña y verificación de correo (forma concreta).
+6. Uso sin conexión de rutinas y ejercicios ya guardados (solo la sesión en curso está garantizada).
+7. Todo lo listado en PROJECT.md §7.7 para sesiones compartidas.

@@ -468,19 +468,38 @@ La comparación es **sensible al 100 %**: no hay margen de tolerancia en ninguna
 
 Con tolerancia 0, un resultado solo es "similar" cuando el valor es exactamente igual.
 
-Indicadores:
+## Niveles de comparación (aprobados)
 
-- Verde: mejora.
-- Rojo: empeoramiento.
-- Gris: rendimiento similar.
+Cada métrica se clasifica en uno de cuatro niveles. **El peso tiene un nivel propio, por encima de la mejora normal:**
 
-En la vista general del ejercicio, mostrar un indicador agregado.
+| Nivel | Cuándo | Color |
+|---|---|---|
+| Peso mejorado | El peso sube, aunque otras métricas bajen | Amarillo |
+| Mejora | Suben las repeticiones o el tiempo | Verde |
+| Igual | El valor es exactamente el mismo | Gris |
+| Empeoramiento | Baja cualquier métrica | Rojo |
 
-Al desplegarlo, mostrar el detalle de las métricas que han mejorado o empeorado.
+Reglas:
+
+- Si sube el peso, esa métrica se marca **amarillo siempre**. Aunque también suban las repeticiones, el peso no se cuenta como verde: es un nivel superior.
+- Si sube el peso y bajan las repeticiones, el resumen muestra un amarillo y un rojo. Los niveles no se compensan entre sí.
+- Cada métrica cuenta por separado. No hay suma, resta ni nota final.
+
+## Resumen visual (aprobado)
+
+No se muestra un valor único que lo resuma todo: ni puntuación, ni porcentaje, ni color dominante.
+
+Se muestran **cantidades con su punto de color**, en orden fijo: amarillo, verde, gris y rojo. Solo aparecen los niveles que tengan al menos una métrica.
+
+Ejemplo con 3 métricas:
+
+> `1 ●` amarillo · `1 ●` verde · `0 ●` gris · `1 ●` rojo
+
+Significa: subió el peso, mejoró una métrica de repeticiones o tiempo, ninguna se quedó igual y una empeoró.
+
+Al desplegar el resumen se muestra el detalle: qué métrica está en cada nivel y sus valores (anterior → actual).
 
 La lógica de comparación debe estar separada de la interfaz.
-
-**Pendiente de aprobación:** qué color e indicador agregado se muestran cuando, en el mismo ejercicio, unas métricas mejoran y otras empeoran.
 
 ---
 
@@ -764,6 +783,7 @@ Reglas de avance:
 | IN-004 | Las sesiones se inician solo desde el inicio (rutina de hoy) o desde la lista de rutinas. El calendario no inicia sesiones. | Aprobada |
 | IN-005 | Las sesiones de rutinas no planificadas para el día aparecen en el calendario como entrada adicional diferenciada. | Aprobada |
 | IN-006 | Cancelar una sesión en curso requiere confirmación explícita. | Aprobada |
+| IN-009 | El resumen de comparación muestra cantidades por nivel (amarillo, verde, gris, rojo), sin valor único. El peso mejorado se marca amarillo. | Aprobada |
 | PR-001 | Todo el código se comenta en lenguaje sencillo y cada entrega incluye explicación de archivos y pruebas. | Aprobada |
 | AR-001 | Arquitectura de cinco capas, estructura `app/` + `src/` y desarrollo por fases verificables. | Aprobada |
 
@@ -778,6 +798,7 @@ Reglas de avance:
 - **IN-004:** el inicio responde a "qué toca hoy" y la lista de rutinas responde a "qué quiero entrenar"; separar ambas evita ambigüedad.
 - **IN-005:** un entrenamiento real no debe desaparecer del calendario solo porque no estaba planificado.
 - **IN-006:** cancelar descarta una sesión en curso y no debe ocurrir por un toque accidental.
+- **IN-009:** un color dominante mentiría: bajar repeticiones no se compensa con subir peso. Mostrar cantidades por nivel informa sin ocultar nada, y el amarillo reconoce que subir peso es un salto de nivel distinto.
 - **PR-001:** el objetivo del proyecto incluye comprender el código, no solo que funcione.
 - **AR-001:** permite probar la lógica sin móvil, cambiar la base de datos sin tocar pantallas y aprender por partes.
 
