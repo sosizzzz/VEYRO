@@ -2,9 +2,9 @@
 
 Aplicación móvil para gestionar entrenamientos: ejercicios, rutinas, sesiones e historial.
 
-**Estado actual:** fase 0 (base del proyecto). Todavía no hay funcionalidad de entrenamiento.
+**Estado actual:** fases 0 a 3 implementadas (acceso, ejercicios y rutinas). Fase 4 (seguridad y aislamiento) en verificación; Fase 5 (motor de sesión) en preparación.
 
-La especificación funcional completa está en [PROJECT.md](./PROJECT.md). Los documentos técnicos son [ARCHITECTURE.md](./ARCHITECTURE.md), [DATABASE.md](./DATABASE.md), [WORKFLOW.md](./WORKFLOW.md), [DECISIONS.md](./DECISIONS.md) y [ROADMAP.md](./ROADMAP.md).
+La especificación funcional completa está en [PROJECT.md](./PROJECT.md). Los documentos técnicos son [ARCHITECTURE.md](./ARCHITECTURE.md), [DATABASE.md](./DATABASE.md), [WORKFLOW.md](./WORKFLOW.md), [DECISIONS.md](./DECISIONS.md) y [ROADMAP.md](./ROADMAP.md). Si sois dos personas trabajando, leed también [docs/TRABAJO_PARALELO.md](./docs/TRABAJO_PARALELO.md).
 
 ---
 
