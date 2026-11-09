@@ -1,78 +1,156 @@
 # VEYRON
 
 <p align="center">
-  <strong>YOUR TRAINING. YOUR PROGRESS. YOUR RULES.</strong>
+  <strong>TRAIN SMARTER. TRACK EVERYTHING. OWN YOUR PROGRESS.</strong>
+  <br/><br/>
+  A modern workout tracking app designed to replace the traditional gym notebook.
   <br/>
-  A smarter way to track your fitness journey.
-</p>
-
-<p align="center">
-  Forget the traditional gym notebook.
-  <br/>
-  Focus on training. Let VEYRON handle the tracking.
+  Plan your routines, track every set and take control of your fitness journey.
 </p>
 
 ---
 
-## 🏋️ About VEYRON
+## 🏋️ About the Project
 
-**VEYRON** is a workout tracking application designed to replace the traditional gym notebook with a more convenient, organized and efficient way to manage your training sessions.
+**VEYRON** is a mobile workout tracking application built to make training management simpler, smarter and more organized.
 
-Create your own routines, add exercises, set reminders and keep track of your workout history to know exactly what you lifted last week.
+Forget about carrying a notebook to the gym or trying to remember how much weight you lifted last week. VEYRON brings your exercises, routines, workout sessions and performance history together in one place.
 
-Because progress starts with knowing where you stand.
+Whether you train alone, with a partner or in a group, VEYRON is designed to keep track of every participant's individual performance.
+
+**Your training. Your data. Your progress.**
 
 ## ✨ Features
 
-- **📋 Routine Management:** Create and customize your own workout routines.
-- **💪 Exercise Management:** Add exercises and organize your training sessions.
-- **📈 Progress Tracking:** Monitor your performance and compare your results over time.
-- **⏰ Reminders:** Set reminders to stay consistent with your training.
-- **🗓️ Workout History:** Access your previous sessions whenever you need them.
-- **🎯 Everything in One Place:** Keep all your workout information organized and accessible.
+### 📋 Workout Management
+- Create and customize workout routines.
+- Organize exercises in your preferred order.
+- Assign routines to specific days of the week.
+- Configure individual goals for every set.
 
-## 🎯 Our Philosophy
+### 💪 Exercise Management
+- Create and manage custom exercises.
+- Organize exercises by primary muscle group.
+- Archive exercises without losing historical data.
+- Reuse exercises across different routines.
 
-VEYRON isn't here to do the training for you.
+### 📈 Performance Tracking
+- Record weights, repetitions and time for every set.
+- Compare your performance against your previous session.
+- Track improvements and performance changes.
+- Access your complete workout history.
 
-Its purpose is to eliminate unnecessary distractions, simplify workout management and give you the tools you need to focus on what really matters:
+### ⏱️ Workout Experience
+- Built-in configurable rest timer.
+- Automatically save workout progress.
+- Resume interrupted sessions.
+- Manage skipped and completed exercises.
+- Track workout duration and results.
 
-**Your progress.**
+### 🗓️ Calendar & Planning
+- Weekly and monthly calendar views.
+- Visual workout status indicators.
+- Overview of scheduled and completed routines.
+- Quick access to your daily training plan.
 
-Don't rely on your memory. Track, compare and improve.
+### 👥 Shared Workouts
+*Planned for a future development phase.*
 
----
+- Train with friends, partners or groups.
+- Share workout routines.
+- Alternate turns between participants.
+- Maintain independent goals and performance records.
+- Keep everyone's workout history separate.
 
 ## 🛠️ Tech Stack
 
-> Technologies used in this project.
+VEYRON is being developed using a modern mobile development stack.
 
-- [Technology 1]
-- [Technology 2]
-- [Technology 3]
+| Technology | Purpose |
+|---|---|
+| TypeScript | Main programming language |
+| React Native | Mobile application framework |
+| Expo | Development platform |
+| Expo Router | Navigation |
+| Supabase | Backend and authentication |
+| PostgreSQL | Database |
+| Expo EAS | Application builds and deployment |
+
+## 🏗️ Architecture & Development
+
+The project follows a modular architecture focused on maintainability, scalability and separation of responsibilities.
+
+Key principles:
+
+- Strict TypeScript configuration.
+- Reusable components.
+- Separation of UI and business logic.
+- Centralized data management.
+- Local-first workout session persistence.
+- Supabase Row Level Security (RLS).
+- Incremental development with independently verifiable phases.
+
+## 🚧 Project Status
+
+<em>Currently in development.</em>
+
+VEYRON is being developed incrementally, starting with its individual workout management experience.
+
+| Feature | Status |
+|---|---|
+| Exercise management | MVP |
+| Routine management | MVP |
+| Individual workout sessions | MVP |
+| Workout history | MVP |
+| Performance comparison | MVP |
+| Calendar & planning | MVP |
+| Shared workout sessions | Planned |
+| Partner and group training | Planned |
+
+*Feature specifications and implementation progress are tracked separately.*
 
 ## 🚀 Getting Started
 
+### Prerequisites
+
+- Node.js
+- npm
+- Expo Go (for development)
+
+### Installation
+
 ```bash
 # Clone the repository
-git clone REPOSITORY_URL
+git clone https://github.com/sosizzzz/VEYRO
 
-# Navigate to the project directory
+# Navigate to the project folder
 cd VEYRON
+
+# Install dependencies
+npm install
+
+# Start the development server
+npx expo start
 ```
 
-Follow the project-specific instructions to install dependencies and run the application.
+Scan the QR code with Expo Go to run the application on your device.
 
-## 📸 Screenshots
+## 🎯 Vision
 
-Coming soon...
+VEYRON is built around a simple idea:
+
+**Progress shouldn't depend on your memory.**
+
+Every repetition, every kilogram and every workout tells a story about your progress. VEYRON aims to make that information accessible, organized and meaningful.
+
+No more guessing. No more forgotten numbers. Just you, your training and your progress.
 
 ---
 
 <p align="center">
   <strong>VEYRON</strong>
   <br/>
-  <i>Track every rep. Own every progress.</i>
+  <i>Track every rep. Own your progress.</i>
   <br/><br/>
-  Made with dedication.
+  Built with dedication.
 </p>
