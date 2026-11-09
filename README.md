@@ -1,156 +1,84 @@
 # VEYRO
 
-<p align="center">
-  <strong>TRAIN SMARTER. TRACK EVERYTHING. OWN YOUR PROGRESS.</strong>
-  <br/><br/>
-  A modern workout tracking app designed to replace the traditional gym notebook.
-  <br/>
-  Plan your routines, track every set and take control of your fitness journey.
-</p>
+Aplicación móvil para gestionar entrenamientos: ejercicios, rutinas, sesiones e historial.
+
+**Estado actual:** fase 0 (base del proyecto). Todavía no hay funcionalidad de entrenamiento.
+
+La especificación funcional completa está en [PROJECT.md](./PROJECT.md). Los documentos técnicos son [ARCHITECTURE.md](./ARCHITECTURE.md), [DATABASE.md](./DATABASE.md), [WORKFLOW.md](./WORKFLOW.md), [DECISIONS.md](./DECISIONS.md) y [ROADMAP.md](./ROADMAP.md).
 
 ---
 
-## 🏋️ About the Project
+## Qué necesitas instalado
 
-**VEYRO** is a mobile workout tracking application built to make training management simpler, smarter and more organized.
+| Herramienta | Para qué | Cómo comprobarlo |
+|---|---|---|
+| Node.js 24 LTS | Ejecutar el proyecto | `node -v` |
+| npm (viene con Node) | Instalar dependencias | `npm -v` |
+| Git | Guardar versiones del código | `git --version` |
+| Expo Go (en el móvil) | Ver la app sin compilar | Se instala desde la tienda de apps |
 
-Forget about carrying a notebook to the gym or trying to remember how much weight you lifted last week. VEYRO brings your exercises, routines, workout sessions and performance history together in one place.
-
-Whether you train alone, with a partner or in a group, VEYRO is designed to keep track of every participant's individual performance.
-
-**Your training. Your data. Your progress.**
-
-## ✨ Features
-
-### 📋 Workout Management
-- Create and customize workout routines.
-- Organize exercises in your preferred order.
-- Assign routines to specific days of the week.
-- Configure individual goals for every set.
-
-### 💪 Exercise Management
-- Create and manage custom exercises.
-- Organize exercises by primary muscle group.
-- Archive exercises without losing historical data.
-- Reuse exercises across different routines.
-
-### 📈 Performance Tracking
-- Record weights, repetitions and time for every set.
-- Compare your performance against your previous session.
-- Track improvements and performance changes.
-- Access your complete workout history.
-
-### ⏱️ Workout Experience
-- Built-in configurable rest timer.
-- Automatically save workout progress.
-- Resume interrupted sessions.
-- Manage skipped and completed exercises.
-- Track workout duration and results.
-
-### 🗓️ Calendar & Planning
-- Weekly and monthly calendar views.
-- Visual workout status indicators.
-- Overview of scheduled and completed routines.
-- Quick access to your daily training plan.
-
-### 👥 Shared Workouts
-*Planned for a future development phase.*
-
-- Train with friends, partners or groups.
-- Share workout routines.
-- Alternate turns between participants.
-- Maintain independent goals and performance records.
-- Keep everyone's workout history separate.
-
-## 🛠️ Tech Stack
-
-VEYRO is being developed using a modern mobile development stack.
-
-| Technology | Purpose |
-|---|---|
-| TypeScript | Main programming language |
-| React Native | Mobile application framework |
-| Expo | Development platform |
-| Expo Router | Navigation |
-| Supabase | Backend and authentication |
-| PostgreSQL | Database |
-| Expo EAS | Application builds and deployment |
-
-## 🏗️ Architecture & Development
-
-The project follows a modular architecture focused on maintainability, scalability and separation of responsibilities.
-
-Key principles:
-
-- Strict TypeScript configuration.
-- Reusable components.
-- Separation of UI and business logic.
-- Centralized data management.
-- Local-first workout session persistence.
-- Supabase Row Level Security (RLS).
-- Incremental development with independently verifiable phases.
-
-## 🚧 Project Status
-
-<em>Currently in development.</em>
-
-VEYRO is being developed incrementally, starting with its individual workout management experience.
-
-| Feature | Status |
-|---|---|
-| Exercise management | MVP |
-| Routine management | MVP |
-| Individual workout sessions | MVP |
-| Workout history | MVP |
-| Performance comparison | MVP |
-| Calendar & planning | MVP |
-| Shared workout sessions | Planned |
-| Partner and group training | Planned |
-
-*Feature specifications and implementation progress are tracked separately.*
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js
-- npm
-- Expo Go (for development)
-
-### Installation
+## Poner el proyecto en marcha
 
 ```bash
-# Clone the repository
-git clone https://github.com/sosizzzz/VEYRO
-
-# Navigate to the project folder
-cd VEYRO
-
-# Install dependencies
+# 1. Instalar las dependencias (solo la primera vez, o cuando cambie package.json)
 npm install
 
-# Start the development server
-npx expo start
+# 2. Arrancar el servidor de desarrollo
+npm start
 ```
 
-Scan the QR code with Expo Go to run the application on your device.
+Después:
 
-## 🎯 Vision
+1. Abre **Expo Go** en el móvil.
+2. Escanea el código QR que aparece en la terminal.
+3. El móvil y el ordenador deben estar en la **misma red Wi-Fi**.
 
-VEYRO is built around a simple idea:
-
-**Progress shouldn't depend on your memory.**
-
-Every repetition, every kilogram and every workout tells a story about your progress. VEYRO aims to make that information accessible, organized and meaningful.
-
-No more guessing. No more forgotten numbers. Just you, your training and your progress.
+Si la red impide conectarse, usa `npx expo start --tunnel`.
 
 ---
 
-<p align="center">
-  <strong>VEYRO</strong>
-  <br/>
-  <i>Track every rep. Own your progress.</i>
-  <br/><br/>
-  Built with dedication.
-</p>
+## Comandos disponibles
+
+| Comando | Qué hace |
+|---|---|
+| `npm start` | Arranca la app en modo desarrollo |
+| `npm run android` | Abre directamente en un emulador de Android |
+| `npm run web` | Abre la versión web en el navegador |
+| `npm test` | Ejecuta los tests automáticos |
+| `npm run typecheck` | Comprueba los tipos sin ejecutar nada |
+| `npm run lint` | Busca errores y malas prácticas |
+| `npm run format` | Da formato al código automáticamente |
+
+---
+
+## Cómo está organizado
+
+```
+app/          Pantallas y navegación (una ruta = un archivo)
+src/domain/   Reglas de negocio puras, sin React ni Supabase
+src/data/     Acceso a Supabase y al almacenamiento del móvil
+src/modules/  Lógica por área funcional (rutinas, ejercicios…)
+src/ui/       Componentes visuales y tema
+src/types/    Tipos compartidos
+src/config/   Variables de entorno y constantes
+```
+
+La regla de oro: **una capa solo conoce a la que tiene justo debajo**. El detalle está en ARCHITECTURE.md.
+
+---
+
+## Variables de entorno
+
+1. Copia `.env.example` a `.env.local`.
+2. Rellena los valores de tu proyecto de Supabase.
+
+`.env.local` nunca se sube a Git.
+
+---
+
+## Antes de dar una tarea por terminada
+
+1. `npm run typecheck` sin errores.
+2. `npm run lint` sin errores.
+3. `npm test` en verde.
+4. Probado en el móvil.

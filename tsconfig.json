@@ -1,0 +1,23 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    // `strict` activa todas las comprobaciones fuertes de TypeScript.
+    // Es una regla del proyecto: nada de tipos implícitos ni de `any` silencioso.
+    "strict": true,
+    // Declara globales de Jest (`describe`, `it`, `expect`) en los tests.
+    // Sin esto, TypeScript no sabe que existen al comprobar los tipos.
+    "types": ["jest"],
+    // Atajo de rutas: `@/algo` apunta a `src/algo`.
+    // Así no aparecen imports con `../../..` imposibles de leer.
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": ["node_modules"]
+}

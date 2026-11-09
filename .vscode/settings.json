@@ -1,0 +1,34 @@
+{
+  // Formato y correcciones al guardar (evita discutir espacios y comas).
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+
+  // TypeScript: usar la versión instalada en el proyecto, no la de VS Code.
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+
+  // ESLint: activar en los archivos de este proyecto.
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // Ocultar carpetas generadas que no se deben tocar a mano.
+  "files.exclude": {
+    "**/.expo": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.expo": true,
+    "**/dist": true
+  },
+
+  // El tema de Expo crea sus propios JSON; no molestan.
+  "json.schemaDownload.enable": true
+}
