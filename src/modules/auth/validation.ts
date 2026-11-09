@@ -61,9 +61,27 @@ export const signInSchema = z.object({
   password: z.string().min(1, 'Escribe tu contraseña.'),
 });
 
+/** Formulario de recuperación de contraseña (solicitar enlace). */
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
+});
+
+/** Formulario para fijar una nueva contraseña tras el enlace de recuperación. */
+export const resetPasswordSchema = z
+  .object({
+    password: passwordSchema,
+    confirmPassword: z.string(),
+  })
+  .refine((values) => values.password === values.confirmPassword, {
+    message: 'Las contraseñas no coinciden.',
+    path: ['confirmPassword'],
+  });
+
 /** Tipos derivados de los esquemas, para no escribirlos dos veces. */
 export type SignUpValues = z.infer<typeof signUpSchema>;
 export type SignInValues = z.infer<typeof signInSchema>;
+export type ForgotPasswordValues = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 /**
  * Devuelve el primer mensaje de error de una validación fallida.

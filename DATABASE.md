@@ -13,7 +13,7 @@
 1. **Todo pertenece a un usuario.** Ninguna tabla queda sin dueño o sin cadena de propiedad.
 2. **Identificadores UUID.** Se generan en el móvil, no en el servidor. Así la app puede guardar sin conexión y sincronizar después sin esperar respuesta.
 3. **Fechas en UTC** (`timestamptz`). La app las muestra en la zona horaria del móvil.
-4. **Nada se borra de verdad en el MVP.** Los ejercicios se archivan (`archived_at`). El historial no se destruye.
+4. **Nada se borra de verdad en el MVP.** Los ejercicios y las rutinas se archivan (`archived_at`). El historial no se destruye.
 5. **Seguridad en el servidor.** RLS activo en todas las tablas. El `user_id` que envía el cliente nunca es la garantía de autorización.
 6. **La sesión es una foto.** Al empezar se copian nombre, músculo, icono, orden y objetivos dentro de la sesión. Editar después la rutina o el ejercicio no reescribe el pasado.
 
@@ -56,10 +56,11 @@
 | `owner_id` | uuid, FK → `profiles.id` | |
 | `name` | text, obligatorio | |
 | `description` | text, opcional | |
+| `archived_at` | timestamptz, opcional | `NULL` = activa; con fecha = archivada (IN-010) |
 | `source_routine_id` | uuid, opcional | Procedencia de una copia (futuro) |
 | `created_at` | timestamptz | |
 
-> El borrado de rutinas no está especificado en PROJECT.md. No se añade columna hasta que se apruebe (ver §7).
+**Archivar no es borrar (IN-010):** la rutina desaparece del listado general y **no puede usarse para iniciar un entrenamiento nuevo** hasta recuperarla. Se recupera poniendo `archived_at` a `NULL`. El historial/sesiones pasadas se conserva.
 
 ### 2.4. `routine_exercises` · ejercicios dentro de una rutina
 
@@ -223,7 +224,7 @@ Si `synced_at` está vacío, la operación no está sincronizada, diga lo que di
 ## 6. Índices previstos
 
 - `exercises (owner_id, archived_at)`
-- `routines (owner_id)`
+- `routines (owner_id, archived_at)`
 - `routine_exercises (routine_id, position)`
 - `routine_schedule_days (weekday)`
 - `workout_sessions (owner_id, started_at desc)`
@@ -238,8 +239,7 @@ Si `synced_at` está vacío, la operación no está sincronizada, diga lo que di
 Nada de esto se implementa hasta que se apruebe:
 
 1. **Catálogo de músculos.** PROJECT.md pide "músculo principal" pero no define la lista de valores.
-2. **Borrado de rutinas.** No está especificado si se archivan, se borran o no se pueden borrar.
-3. **Borrado permanente de ejercicios.** El MVP solo archiva.
-4. **Campos del perfil.** Solo se aprueba nombre visible y avatar opcional.
-5. **Indicador agregado de comparación** cuando unas métricas mejoran y otras empeoran (afecta a cálculos, no al esquema).
-6. **Modelo de sesiones compartidas.** Se diseña al aprobar esa fase; lo actual solo deja el hueco preparado.
+2. **Borrado permanente de ejercicios.** El MVP solo archiva.
+3. **Campos del perfil.** Solo se aprueba nombre visible y avatar opcional.
+4. **Indicador agregado de comparación** cuando unas métricas mejoran y otras empeoran (afecta a cálculos, no al esquema).
+5. **Modelo de sesiones compartidas.** Se diseña al aprobar esa fase; lo actual solo deja el hueco preparado.

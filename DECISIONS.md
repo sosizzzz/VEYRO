@@ -64,6 +64,13 @@ Formato de cada decisión:
 - **Por qué:** un número total obligaría a inventar una equivalencia entre kilos, repeticiones y segundos, que no existe. Las cantidades informan sin mentir. El amarillo separa el peso porque subir carga es un salto de nivel distinto, incluso si se pierden repeticiones.
 - **Consecuencias:** subir peso es siempre amarillo, aunque también suban las repeticiones. Subir peso y bajar repeticiones produce amarillo y rojo simultáneos: no se compensan. Se necesita un componente visual reutilizable para el resumen y una leyenda que explique los colores.
 
+### IN-010 · Las rutinas se archivan, no se borran
+
+- **Contexto:** PROJECT.md/DATABASE.md no especificaban si una rutina se borra, se archiva o no se puede quitar. Ya existía la opción de archivar ejercicios (IN-002).
+- **Decisión:** archivar. La rutina desaparece del listado general, se conserva (no se borra) y puede recuperarse desde una vista de archivadas. **Una rutina archivada no puede usarse para iniciar un entrenamiento nuevo** hasta recuperarla. El historial/sesiones pasadas se conserva.
+- **Por qué:** es coherente con ejercicios, es reversible y evita romper referencias cuando existan sesiones e historial (el modelo ya prevé `workout_sessions.routine_id`).
+- **Consecuencias:** `routines` tiene `archived_at` (migración 005). Existe listado de archivadas con “Recuperar” y acción “Archivar” (con confirmación) en la edición. No hay borrado definitivo en el MVP.
+
 ### PR-001 · Código comentado en lenguaje sencillo
 
 - **Contexto:** quien dirige el proyecto está aprendiendo a programar y necesita entender el código, no solo que funcione.
@@ -126,7 +133,6 @@ Formato de cada decisión:
 1. Comparación serie con serie frente a mejor serie cuando cambia el número de series.
 2. Si "más tiempo" es mejora o empeoramiento según el ejercicio.
 3. Catálogo de músculos.
-4. Borrado de rutinas.
-5. Método de recuperación de contraseña y verificación de correo (forma concreta).
-6. Uso sin conexión de rutinas y ejercicios ya guardados (solo la sesión en curso está garantizada).
-7. Todo lo listado en PROJECT.md §7.7 para sesiones compartidas.
+4. Método de recuperación de contraseña y verificación de correo (forma concreta).
+5. Uso sin conexión de rutinas y ejercicios ya guardados (solo la sesión en curso está garantizada).
+6. Todo lo listado en PROJECT.md §7.7 para sesiones compartidas.

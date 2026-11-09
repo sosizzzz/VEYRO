@@ -2,14 +2,13 @@
  * Layout raíz: lo primero que monta Expo Router.
  *
  * Responsabilidades:
- * 1. Envolver la app en `SafeAreaProvider` (muescas y zonas seguras).
- * 2. Envolverla en `AuthProvider` (quién ha iniciado sesión).
- * 3. Mientras se comprueba la sesión guardada, mostrar una pantalla de carga.
- * 4. Declarar los dos grupos de rutas: `(tabs)` y `(auth)`.
- *
- * Los paréntesis significan "grupo": no añaden nada a la URL, solo organizan.
+ * 1. Envolver la app en `SafeAreaProvider` y `AuthProvider`.
+ * 2. Mostrar carga mientras se comprueba la sesión guardada.
+ * 3. Si el usuario llegó desde un enlace de recuperación, obligarle a fijar
+ *    una nueva contraseña antes de entrar en la app.
+ * 4. Declarar las rutas principales: `(tabs)`, `(auth)` y `nueva-contrasena`.
  */
-import { Stack } from 'expo-router';
+import { Redirect, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -33,11 +32,16 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const scheme = useColorScheme();
-  const { isLoading } = useAuth();
+  const pathname = usePathname();
+  const { isLoading, isPasswordRecovery } = useAuth();
 
-  // Sin este paso se vería el login un instante aunque ya hubiera sesión.
   if (isLoading) {
     return <LoadingScreen message="Comprobando tu sesión…" />;
+  }
+
+  // Tras pulsar el enlace de recuperación, obligamos a fijar nueva contraseña.
+  if (isPasswordRecovery && pathname !== '/nueva-contrasena') {
+    return <Redirect href="/nueva-contrasena" />;
   }
 
   return (
@@ -46,6 +50,7 @@ function RootNavigator() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="nueva-contrasena" />
       </Stack>
     </>
   );

@@ -112,6 +112,14 @@ export default function InicioSesionScreen() {
             <Button label="Entrar" onPress={handleSubmit} loading={isSubmitting} />
 
             <View style={[styles.footer, { marginTop: spacing.lg }]}>
+              <Link href="/olvidar-contrasena" style={styles.link}>
+                <Text style={[typography.caption, { color: colors.primary }]}>
+                  ¿Olvidaste tu contraseña?
+                </Text>
+              </Link>
+            </View>
+
+            <View style={[styles.footer, { marginTop: spacing.sm }]}>
               <Text style={[typography.caption, { color: colors.textMuted }]}>
                 ¿Todavía no tienes cuenta?{' '}
               </Text>

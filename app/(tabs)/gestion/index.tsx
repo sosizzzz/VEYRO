@@ -1,18 +1,56 @@
 /**
- * Gestión (pantalla "Gestión").
- *
- * Aquí vivirán los dos accesos principales: Rutinas y Ejercicios.
- * De momento (fase 1A) muestra quién ha iniciado sesión y permite salir,
- * que es lo mínimo para poder probar el acceso de principio a fin.
+ * Gestión: acceso a Rutinas y Ejercicios, y datos de la sesión.
+ * (Rutinas se implementará en Fase 3; el acceso queda preparado).
  */
+import { Link } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { translateAuthError, useAuth } from '@/modules/auth';
 import { Button } from '@/ui/components/Button';
 import { FormMessage } from '@/ui/components/FormMessage';
 import { Screen } from '@/ui/components/Screen';
 import { useTheme } from '@/ui/theme';
+
+function MenuRow({
+  title,
+  subtitle,
+  href,
+  disabled,
+}: {
+  title: string;
+  subtitle: string;
+  href?: string;
+  disabled?: boolean;
+}) {
+  const { colors, spacing, radius, typography } = useTheme();
+  const content = (
+    <View
+      style={[
+        styles.row,
+        {
+          backgroundColor: colors.surface,
+          borderColor: colors.border,
+          borderRadius: radius.md,
+          padding: spacing.md,
+          opacity: disabled ? 0.55 : 1,
+        },
+      ]}
+    >
+      <Text style={[typography.subtitle, { color: colors.text }]}>{title}</Text>
+      <Text style={[typography.caption, { color: colors.textMuted, marginTop: 2 }]}>
+        {subtitle}
+      </Text>
+    </View>
+  );
+
+  if (disabled || !href) return <View style={{ marginTop: spacing.sm }}>{content}</View>;
+  return (
+    <Link href={href as any} asChild>
+      <Pressable style={{ marginTop: spacing.sm }}>{content}</Pressable>
+    </Link>
+  );
+}
 
 export default function GestionScreen() {
   const { profile, user, signOut } = useAuth();
@@ -26,10 +64,8 @@ export default function GestionScreen() {
   async function handleSignOut() {
     setError(null);
     setIsSigningOut(true);
-
     try {
       await signOut();
-      // El layout de pestañas detecta que no hay sesión y redirige al acceso.
     } catch (caught) {
       setError(translateAuthError(caught));
     } finally {
@@ -38,11 +74,20 @@ export default function GestionScreen() {
   }
 
   return (
-    <Screen
-      title="Gestión"
-      description="Desde aquí crearás y editarás tus rutinas y ejercicios."
-    >
-      {/* Tarjeta con los datos de la sesión actual. */}
+    <Screen title="Gestión" description="Accede a tus rutinas y a tu biblioteca de ejercicios.">
+      <View style={{ marginTop: spacing.lg }}>
+        <MenuRow
+          title="Rutinas"
+          subtitle="Crea y planifica tus rutinas"
+          href="/(tabs)/gestion/rutinas"
+        />
+        <MenuRow
+          title="Ejercicios"
+          subtitle="Catálogo por grupo muscular"
+          href="/(tabs)/gestion/ejercicios"
+        />
+      </View>
+
       <View
         style={[
           styles.card,
@@ -51,18 +96,14 @@ export default function GestionScreen() {
             borderColor: colors.border,
             borderRadius: radius.md,
             padding: spacing.md,
-            marginTop: spacing.lg,
+            marginTop: spacing.xl,
           },
         ]}
       >
-        <Text style={[typography.caption, { color: colors.textMuted }]}>
-          SESIÓN INICIADA COMO
-        </Text>
-
+        <Text style={[typography.caption, { color: colors.textMuted }]}>SESIÓN INICIADA COMO</Text>
         <Text style={[typography.subtitle, { color: colors.text, marginTop: spacing.xs }]}>
           {nombreVisible}
         </Text>
-
         {user?.email ? (
           <Text style={[typography.caption, { color: colors.textMuted, marginTop: 2 }]}>
             {user.email}
@@ -72,20 +113,13 @@ export default function GestionScreen() {
 
       <View style={{ marginTop: spacing.lg }}>
         {error ? <FormMessage tone="error">{error}</FormMessage> : null}
-
-        <Button
-          label="Cerrar sesión"
-          variant="ghost"
-          onPress={handleSignOut}
-          loading={isSigningOut}
-        />
+        <Button label="Cerrar sesión" variant="ghost" onPress={handleSignOut} loading={isSigningOut} />
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-  },
+  card: { borderWidth: 1 },
+  row: { borderWidth: 1 },
 });

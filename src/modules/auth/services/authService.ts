@@ -6,6 +6,8 @@
  *
  * Ventaja: si mañana cambia el sistema de acceso, las pantallas no se tocan.
  */
+import * as Linking from 'expo-linking';
+
 import { supabase } from '@/data/supabase/client';
 
 import type { SignUpValues } from '../validation';
@@ -49,6 +51,43 @@ export async function signUpWithEmail(
 /** Inicia sesión con correo y contraseña. */
 export async function signInWithEmail(email: string, password: string): Promise<void> {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Solicita a Supabase que envíe un enlace para restablecer la contraseña.
+ *
+ * `redirectTo` indica a dónde debe volver el enlace del correo.
+ * En móvil usamos el esquema de la app (`veyro://reset-password`) para que,
+ * al pulsar el enlace, se abra VEYRO y podamos pedir la nueva contraseña.
+ *
+ * IMPORTANTE: Esa URL debe estar permitida en Supabase →
+ * Authentication → URL Configuration → Redirect URLs.
+ */
+export async function resetPasswordWithEmail(email: string): Promise<void> {
+  // Genera la URL a la que debe volver el enlace del correo.
+  // En Expo Go suele ser exp://IP:PUERTO/--/nueva-contrasena (cambia con tu red).
+  // En una build instalada usará el esquema de la app (veyro://...).
+  const redirectTo = Linking.createURL('nueva-contrasena');
+  // Log temporal para pruebas: copia esta URL y añádela en Supabase → Redirect URLs.
+  console.log('[auth] redirectTo reset password:', redirectTo);
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+
+  if (error) {
+    throw error;
+  }
+}
+
+/**
+ * Fija una nueva contraseña para el usuario que ha llegado desde el enlace
+ * de recuperación (sesión temporal de tipo recovery).
+ */
+export async function updatePassword(newPassword: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
 
   if (error) {
     throw error;

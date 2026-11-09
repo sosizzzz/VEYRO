@@ -11,9 +11,13 @@ export {
   displayNameSchema,
   emailSchema,
   firstIssueMessage,
+  forgotPasswordSchema,
   passwordSchema,
+  resetPasswordSchema,
   signInSchema,
   signUpSchema,
+  type ForgotPasswordValues,
+  type ResetPasswordValues,
   type SignInValues,
   type SignUpValues,
 } from './validation';
