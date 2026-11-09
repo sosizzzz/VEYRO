@@ -1,4 +1,4 @@
-# VEYRON
+# VEYRO
 
 <p align="center">
   <strong>TRAIN SMARTER. TRACK EVERYTHING. OWN YOUR PROGRESS.</strong>
@@ -12,11 +12,11 @@
 
 ## 🏋️ About the Project
 
-**VEYRON** is a mobile workout tracking application built to make training management simpler, smarter and more organized.
+**VEYRO** is a mobile workout tracking application built to make training management simpler, smarter and more organized.
 
-Forget about carrying a notebook to the gym or trying to remember how much weight you lifted last week. VEYRON brings your exercises, routines, workout sessions and performance history together in one place.
+Forget about carrying a notebook to the gym or trying to remember how much weight you lifted last week. VEYRO brings your exercises, routines, workout sessions and performance history together in one place.
 
-Whether you train alone, with a partner or in a group, VEYRON is designed to keep track of every participant's individual performance.
+Whether you train alone, with a partner or in a group, VEYRO is designed to keep track of every participant's individual performance.
 
 **Your training. Your data. Your progress.**
 
@@ -64,7 +64,7 @@ Whether you train alone, with a partner or in a group, VEYRON is designed to kee
 
 ## 🛠️ Tech Stack
 
-VEYRON is being developed using a modern mobile development stack.
+VEYRO is being developed using a modern mobile development stack.
 
 | Technology | Purpose |
 |---|---|
@@ -94,7 +94,7 @@ Key principles:
 
 <em>Currently in development.</em>
 
-VEYRON is being developed incrementally, starting with its individual workout management experience.
+VEYRO is being developed incrementally, starting with its individual workout management experience.
 
 | Feature | Status |
 |---|---|
@@ -124,7 +124,7 @@ VEYRON is being developed incrementally, starting with its individual workout ma
 git clone https://github.com/sosizzzz/VEYRO
 
 # Navigate to the project folder
-cd VEYRON
+cd VEYRO
 
 # Install dependencies
 npm install
@@ -137,18 +137,18 @@ Scan the QR code with Expo Go to run the application on your device.
 
 ## 🎯 Vision
 
-VEYRON is built around a simple idea:
+VEYRO is built around a simple idea:
 
 **Progress shouldn't depend on your memory.**
 
-Every repetition, every kilogram and every workout tells a story about your progress. VEYRON aims to make that information accessible, organized and meaningful.
+Every repetition, every kilogram and every workout tells a story about your progress. VEYRO aims to make that information accessible, organized and meaningful.
 
 No more guessing. No more forgotten numbers. Just you, your training and your progress.
 
 ---
 
 <p align="center">
-  <strong>VEYRON</strong>
+  <strong>VEYRO</strong>
   <br/>
   <i>Track every rep. Own your progress.</i>
   <br/><br/>
