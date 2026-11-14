@@ -8,5 +8,5 @@
  */
 export { darkColors, lightColors, type ThemeColors } from './colors';
 export { radius, spacing } from './spacing';
-export { typography } from './typography';
+export { fontFamilies, typography } from './typography';
 export { useTheme, type Theme } from './useTheme';
