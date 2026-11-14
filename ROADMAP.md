@@ -2,8 +2,8 @@
 
 ## Plan de desarrollo por fases
 
-**Regla:** una fase cada vez. No se empieza la siguiente sin aprobar y probar la anterior.
-**Estado global:** fase 0 completada. Fase 1A completada en código; pendiente de ejecutar la migración en Supabase y probarla en el móvil.
+**Regla:** ninguna fase se da por terminada sin sus pruebas. Con dos personas, las fases se trabajan en dos verticales paralelas ([docs/TRABAJO_PARALELO.md](./docs/TRABAJO_PARALELO.md)); cada fase se cierra con su prueba y aprobación, y no se fusiona nada sin revisión.
+**Estado global:** fases 0 a 3 completadas. Fase 4 en verificación (aislamiento con 2 cuentas). Fases 5 a 11 repartidas en dos verticales paralelas.
 
 | Estado | Significado |
 |---|---|
@@ -15,7 +15,7 @@
 
 ## Fase 0 · Base del proyecto
 
-**Estado:** en curso. Código completo; falta probarla en Expo Go.
+**Estado:** Hecho. La app arranca en el móvil; `npm test` y `npx tsc --noEmit` pasan.
 
 **Objetivo:** que la app arranque en blanco, ordenada y con reglas de calidad activas.
 
@@ -38,7 +38,7 @@
 
 ## Fase 1 · Acceso y perfil
 
-**Estado:** 1A completada en código. Falta ejecutar la migración en Supabase y probarla en el móvil. 1B pendiente.
+**Estado:** 1A Hecho (probado en Android con sesión persistente y errores en español). 1B pendiente: tarea M-11 del reparto paralelo.
 
 **Objetivo:** entrar en la app con correo y contraseña y ver tu nombre.
 
@@ -74,6 +74,8 @@
 
 ## Fase 2 · Ejercicios
 
+**Estado:** Hecho. Migraciones 002 y 003 aplicadas; creación, edición, archivado y recuperación probados en el móvil.
+
 **Objetivo:** gestionar tu biblioteca de ejercicios.
 
 **Entregables**
@@ -94,6 +96,8 @@
 
 ## Fase 3 · Rutinas
 
+**Estado:** Hecho. Migraciones 004 y 005 aplicadas; crear, editar, archivar y recuperar probados en el móvil. Queda la creación rápida de ejercicio desde la rutina (tarea M-14).
+
 **Objetivo:** diseñar rutinas completas.
 
 **Entregables**
@@ -109,6 +113,8 @@
 ---
 
 ## Fase 4 · Datos y seguridad
+
+**Estado:** En curso. Políticas revisadas en las migraciones 001–005; falta la prueba de aislamiento con 2 cuentas (tarea A-01).
 
 **Objetivo:** que todo lo anterior sea seguro y esté bien modelado en la base de datos.
 

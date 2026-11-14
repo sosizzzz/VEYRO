@@ -23,6 +23,8 @@ Quien dirige el proyecto **está aprendiendo a programar**. Explicar el código 
 
 ## Cómo trabajar
 
+**Si hay dos personas:** el reparto de carpetas, tareas y contratos está en [docs/TRABAJO_PARALELO.md](./docs/TRABAJO_PARALELO.md). Leerlo antes de tocar código.
+
 1. **Antes de implementar:** analiza los requisitos, revisa el código existente, identifica los módulos afectados, propón una solución y señala los riesgos.
 2. **Pide aprobación** cuando haya decisiones importantes pendientes. No decidas por tu cuenta lo marcado como "Pendiente de aprobación" en PROJECT.md.
 3. **Trabaja en tareas pequeñas** y con alcance limitado. Una tarea cada vez.
