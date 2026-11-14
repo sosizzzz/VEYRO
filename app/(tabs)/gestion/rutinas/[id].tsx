@@ -11,6 +11,7 @@ import { ActivityIndicator, Alert, Text, View } from 'react-native';
 
 import { useAuth } from '@/modules/auth';
 import { saveLocalSession } from '@/data/local';
+import { getErrorMessage } from '@/lib/errors';
 import { listActiveExercises, type Exercise } from '@/modules/exercises';
 import {
   archiveRoutine,
@@ -124,7 +125,12 @@ export default function EditarRutinaScreen() {
 
       router.push(`/sesion/${session.id}` as never);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo empezar el entrenamiento.');
+      // En desarrollo, Metro muestra el objeto completo: ayuda a distinguir
+      // un fallo de red de un rechazo de Supabase.
+      console.error('[rutinas] no se pudo iniciar la sesión:', cause);
+      setError(
+        getErrorMessage(cause, 'No se pudo empezar el entrenamiento.'),
+      );
     } finally {
       setStarting(false);
     }
