@@ -75,9 +75,50 @@ export type SessionCanceledEvent = {
 };
 
 /**
- * Lista cerrada de eventos del motor.
+ * Eventos del temporizador de descanso (WORKFLOW.md §6).
  *
- * Los del temporizador se añadirán en la tarea A-03, dentro de este mismo tipo.
+ * Todos reciben la hora desde fuera (`startedAt`, `at`, `now`) para que los
+ * tests no dependan del reloj real.
+ */
+
+/** Arranca el descanso. Si se indica `seconds`, también cambia la preferencia. */
+export type RestTimerStartedEvent = {
+  type: 'REST_TIMER_STARTED';
+  startedAt: string;
+  seconds?: number;
+};
+
+/** Pausa el descanso conservando los segundos que quedaban. */
+export type RestTimerPausedEvent = {
+  type: 'REST_TIMER_PAUSED';
+  at: string;
+};
+
+/** Reanuda un descanso pausado. */
+export type RestTimerResumedEvent = {
+  type: 'REST_TIMER_RESUMED';
+  at: string;
+};
+
+/** Detiene el descanso y vuelve a dejar el tiempo configurado. */
+export type RestTimerStoppedEvent = {
+  type: 'REST_TIMER_STOPPED';
+};
+
+/** Comprueba si el descanso terminó (lo llama la pantalla cada segundo). */
+export type RestTimerTickedEvent = {
+  type: 'REST_TIMER_TICKED';
+  now: string;
+};
+
+/** Cambia el descanso preferido (se recuerda entre sesiones). */
+export type RestTimerDurationChangedEvent = {
+  type: 'REST_TIMER_DURATION_CHANGED';
+  seconds: number;
+};
+
+/**
+ * Lista cerrada de eventos del motor.
  */
 export type WorkoutEvent =
   | SetCompletedEvent
@@ -86,7 +127,13 @@ export type WorkoutEvent =
   | ExerciseOmittedEvent
   | ExerciseSelectedEvent
   | SessionFinishedEvent
-  | SessionCanceledEvent;
+  | SessionCanceledEvent
+  | RestTimerStartedEvent
+  | RestTimerPausedEvent
+  | RestTimerResumedEvent
+  | RestTimerStoppedEvent
+  | RestTimerTickedEvent
+  | RestTimerDurationChangedEvent;
 
 /**
  * Motivos por los que una acción puede rechazarse.
@@ -100,7 +147,11 @@ export type WorkoutEngineError =
   | 'SET_NOT_FOUND'
   | 'EXERCISE_NOT_AVAILABLE'
   | 'SET_NOT_PENDING'
-  | 'PENDING_EXERCISES';
+  | 'PENDING_EXERCISES'
+  | 'INVALID_TIMER_SECONDS'
+  | 'INVALID_TIMESTAMP'
+  | 'REST_TIMER_NOT_RUNNING'
+  | 'REST_TIMER_NOT_PAUSED';
 
 /**
  * Resultado de aplicar un evento.
@@ -120,4 +171,8 @@ export const ENGINE_ERROR_MESSAGES: Record<WorkoutEngineError, string> = {
   EXERCISE_NOT_AVAILABLE: 'Ese ejercicio ya está completado u omitido.',
   SET_NOT_PENDING: 'Esa serie ya se había registrado.',
   PENDING_EXERCISES: 'Todavía quedan ejercicios pendientes.',
+  INVALID_TIMER_SECONDS: 'El descanso debe durar entre 1 y 3600 segundos.',
+  INVALID_TIMESTAMP: 'La fecha recibida no es válida.',
+  REST_TIMER_NOT_RUNNING: 'El descanso no está corriendo.',
+  REST_TIMER_NOT_PAUSED: 'El descanso no está pausado.',
 };

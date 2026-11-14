@@ -137,7 +137,7 @@ Una tarea no pasa a `Hecho` sin typecheck, tests y prueba manual (ver §10).
 
 | ID | Tarea | Fase | Depende de | Tamaño | Estado |
 |---|---|---|---|---|---|
-| A-03 | Motor: temporizador, saltar/omitir y finalización + tests | 5 | A-02 | M | Pendiente |
+| A-03 | Motor: temporizador, saltar/omitir y finalización + tests | 5 | A-02 | M | Hecho |
 | A-04 | Servicios de sesión: iniciar desde rutina, guardar la “foto”, finalizar y cancelar | 6 | C-02 | M | Pendiente |
 | M-02 | Componentes de sesión: fila de serie, progreso del ejercicio, temporizador visual | 6 | M-01, CT-06 | M | Pendiente |
 | M-04 | Dominio `planning`: qué rutinas tocan hoy | 10 | CT-03 | S | Pendiente |

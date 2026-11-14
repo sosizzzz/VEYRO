@@ -53,6 +53,7 @@ export const FIXTURE_SESSION_IN_PROGRESS: WorkoutSessionDetail = {
   rest_timer_seconds: 60,
   rest_timer_state: 'detenido',
   rest_timer_remaining: 60,
+  rest_timer_ends_at: null,
   participants: [
     {
       id: '11111111-1111-4111-8111-111111111111',
@@ -199,6 +200,7 @@ export const FIXTURE_SESSION_FINISHED: WorkoutSessionDetail = {
   rest_timer_seconds: 90,
   rest_timer_state: 'detenido',
   rest_timer_remaining: 90,
+  rest_timer_ends_at: null,
   participants: [
     {
       id: '11111111-1111-4111-8111-111111111111',

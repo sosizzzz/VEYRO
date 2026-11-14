@@ -28,6 +28,7 @@
  *   rest_timer_seconds: DEFAULT_REST_TIMER_SECONDS,
  *   rest_timer_state: 'detenido',
  *   rest_timer_remaining: DEFAULT_REST_TIMER_SECONDS,
+ *   rest_timer_ends_at: null,
  * };
  * ```
  */
@@ -102,6 +103,14 @@ export type WorkoutSession = {
   rest_timer_state: RestTimerState;
   /** Segundos que quedaban cuando se guardó por última vez. */
   rest_timer_remaining: number;
+  /**
+   * Hora exacta (ISO 8601) a la que termina el descanso mientras corre.
+   *
+   * Guardarla permite recalcular el tiempo si el móvil se apaga o la app se
+   * cierra: al volver no hay que "adivinar" cuántos segundos pasaron, basta
+   * con comparar esta hora con la hora actual. Es `null` si no corre.
+   */
+  rest_timer_ends_at: string | null;
 };
 
 /**

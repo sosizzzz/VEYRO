@@ -151,6 +151,18 @@ export function applyWorkoutEvent(
       return finishSession(state, event.finishedAt);
     case 'SESSION_CANCELED':
       return cancelSession(state);
+    case 'REST_TIMER_STARTED':
+      return startRestTimer(state, event);
+    case 'REST_TIMER_PAUSED':
+      return pauseRestTimer(state, event.at);
+    case 'REST_TIMER_RESUMED':
+      return resumeRestTimer(state, event.at);
+    case 'REST_TIMER_STOPPED':
+      return stopRestTimer(state);
+    case 'REST_TIMER_TICKED':
+      return tickRestTimer(state, event.now);
+    case 'REST_TIMER_DURATION_CHANGED':
+      return changeRestTimerDuration(state, event.seconds);
   }
 }
 
@@ -277,6 +289,191 @@ function cancelSession(state: WorkoutEngineState): WorkoutEngineResult {
     ...state,
     session: { ...state.session, status: 'cancelada' },
     currentExerciseId: null,
+  });
+}
+
+/** Límites del descanso, en segundos. Coinciden con el CHECK de la migración 006. */
+const MIN_REST_SECONDS = 1;
+const MAX_REST_SECONDS = 3600;
+
+/** Convierte una fecha ISO en milisegundos; `null` si no es válida. */
+function parseTimestamp(value: string): number | null {
+  const milliseconds = Date.parse(value);
+  return Number.isNaN(milliseconds) ? null : milliseconds;
+}
+
+/** Segundos que faltan entre dos fechas ISO, redondeando hacia arriba. */
+function secondsBetween(from: string, to: string): number | null {
+  const start = parseTimestamp(from);
+  const end = parseTimestamp(to);
+  if (start === null || end === null) return null;
+  return Math.max(0, Math.ceil((end - start) / 1000));
+}
+
+/** ¿El descanso pedido está dentro de los límites? */
+function isValidRestSeconds(seconds: number): boolean {
+  return Number.isInteger(seconds) && seconds >= MIN_REST_SECONDS && seconds <= MAX_REST_SECONDS;
+}
+
+/**
+ * Segundos que le quedan al descanso en un momento dado, para pintarlos.
+ *
+ * No modifica el estado: la pantalla puede llamarlo cada segundo y, cuando
+ * llegue a 0, enviar `REST_TIMER_TICKED` para que el motor lo detenga.
+ */
+export function getRestTimerRemaining(state: WorkoutEngineState, now: string): number {
+  const { rest_timer_state, rest_timer_remaining, rest_timer_ends_at } = state.session;
+  if (rest_timer_state !== 'corriendo' || !rest_timer_ends_at) {
+    return rest_timer_remaining;
+  }
+  return secondsBetween(now, rest_timer_ends_at) ?? rest_timer_remaining;
+}
+
+function startRestTimer(
+  state: WorkoutEngineState,
+  event: Extract<WorkoutEvent, { type: 'REST_TIMER_STARTED' }>,
+): WorkoutEngineResult {
+  const startedAt = parseTimestamp(event.startedAt);
+  if (startedAt === null) return fail('INVALID_TIMESTAMP');
+
+  const seconds = event.seconds ?? state.session.rest_timer_seconds;
+  if (!isValidRestSeconds(seconds)) return fail('INVALID_TIMER_SECONDS');
+
+  // Guardamos la hora exacta de fin: si la app se cierra mientras corre, al
+  // volver se recalcula comparando esa hora con la actual (WORKFLOW.md §6).
+  const endsAt = new Date(startedAt + seconds * 1000).toISOString();
+
+  return ok({
+    ...state,
+    session: {
+      ...state.session,
+      rest_timer_seconds: seconds,
+      rest_timer_state: 'corriendo',
+      rest_timer_remaining: seconds,
+      rest_timer_ends_at: endsAt,
+    },
+  });
+}
+
+function pauseRestTimer(state: WorkoutEngineState, at: string): WorkoutEngineResult {
+  if (state.session.rest_timer_state !== 'corriendo' || !state.session.rest_timer_ends_at) {
+    return fail('REST_TIMER_NOT_RUNNING');
+  }
+
+  const remaining = secondsBetween(at, state.session.rest_timer_ends_at);
+  if (remaining === null) return fail('INVALID_TIMESTAMP');
+
+  // Si al pausar ya había terminado, se detiene en vez de quedarse en 0.
+  if (remaining === 0) {
+    return ok({
+      ...state,
+      session: {
+        ...state.session,
+        rest_timer_state: 'detenido',
+        rest_timer_remaining: 0,
+        rest_timer_ends_at: null,
+      },
+    });
+  }
+
+  return ok({
+    ...state,
+    session: {
+      ...state.session,
+      rest_timer_state: 'pausado',
+      rest_timer_remaining: remaining,
+      rest_timer_ends_at: null,
+    },
+  });
+}
+
+function resumeRestTimer(state: WorkoutEngineState, at: string): WorkoutEngineResult {
+  if (state.session.rest_timer_state !== 'pausado') {
+    return fail('REST_TIMER_NOT_PAUSED');
+  }
+
+  const resumedAt = parseTimestamp(at);
+  if (resumedAt === null) return fail('INVALID_TIMESTAMP');
+
+  const remaining = state.session.rest_timer_remaining;
+  if (remaining <= 0) {
+    return ok({
+      ...state,
+      session: {
+        ...state.session,
+        rest_timer_state: 'detenido',
+        rest_timer_remaining: 0,
+        rest_timer_ends_at: null,
+      },
+    });
+  }
+
+  const endsAt = new Date(resumedAt + remaining * 1000).toISOString();
+  return ok({
+    ...state,
+    session: {
+      ...state.session,
+      rest_timer_state: 'corriendo',
+      rest_timer_ends_at: endsAt,
+    },
+  });
+}
+
+function stopRestTimer(state: WorkoutEngineState): WorkoutEngineResult {
+  return ok({
+    ...state,
+    session: {
+      ...state.session,
+      rest_timer_state: 'detenido',
+      // Al detener, el temporizador vuelve a mostrar el descanso configurado.
+      rest_timer_remaining: state.session.rest_timer_seconds,
+      rest_timer_ends_at: null,
+    },
+  });
+}
+
+function tickRestTimer(state: WorkoutEngineState, now: string): WorkoutEngineResult {
+  // Un tick con el temporizador parado no es un error: la pantalla puede
+  // seguir enviándolos sin comprobar antes el estado.
+  if (state.session.rest_timer_state !== 'corriendo' || !state.session.rest_timer_ends_at) {
+    return ok(state);
+  }
+
+  const remaining = secondsBetween(now, state.session.rest_timer_ends_at);
+  if (remaining === null) return fail('INVALID_TIMESTAMP');
+
+  if (remaining === 0) {
+    return ok({
+      ...state,
+      session: {
+        ...state.session,
+        rest_timer_state: 'detenido',
+        rest_timer_remaining: 0,
+        rest_timer_ends_at: null,
+      },
+    });
+  }
+
+  return ok({
+    ...state,
+    session: { ...state.session, rest_timer_remaining: remaining },
+  });
+}
+
+function changeRestTimerDuration(state: WorkoutEngineState, seconds: number): WorkoutEngineResult {
+  if (!isValidRestSeconds(seconds)) return fail('INVALID_TIMER_SECONDS');
+
+  return ok({
+    ...state,
+    session: {
+      ...state.session,
+      rest_timer_seconds: seconds,
+      // Si no hay cuenta atrás en marcha, el número mostrado se actualiza.
+      rest_timer_remaining:
+        state.session.rest_timer_state === 'detenido'
+          ? seconds
+          : state.session.rest_timer_remaining,
+    },
   });
 }
 

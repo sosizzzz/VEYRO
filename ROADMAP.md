@@ -134,7 +134,7 @@
 
 ## Fase 5 · Motor de sesión (sin pantalla)
 
-**Estado:** En curso. Motor base implementado y con tests en verde (A-02); faltan temporizador y cierre de casos de saltar/omitir (A-03).
+**Estado:** Motor completo y con tests en verde (A-02 y A-03): transiciones, saltar/omitir, finalización y temporizador de descanso. Falta conectarlo a la base de datos y a la pantalla (A-04 y A-05).
 
 **Objetivo:** que el cerebro del entrenamiento funcione y esté probado.
 

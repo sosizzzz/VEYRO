@@ -17,6 +17,7 @@ import {
   canFinish,
   createWorkoutEngineState,
   getNextExercise,
+  getRestTimerRemaining,
 } from './engine';
 import type { WorkoutEngineState } from './types';
 
@@ -71,6 +72,7 @@ const SESSION: WorkoutSession = {
   rest_timer_seconds: 60,
   rest_timer_state: 'detenido',
   rest_timer_remaining: 60,
+  rest_timer_ends_at: null,
 };
 
 const PARTICIPANT: SessionParticipant = {
@@ -380,5 +382,217 @@ describe('getNextExercise', () => {
   it('mantiene el ejercicio actual si todavía tiene series pendientes', () => {
     const state = makeThreeExerciseState();
     expect(getNextExercise(state)?.id).toBe('first');
+  });
+});
+
+describe('temporizador de descanso', () => {
+  it('arranca con el descanso configurado y guarda la hora de fin', () => {
+    const state = makeThreeExerciseState();
+
+    const result = applyWorkoutEvent(state, {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.session.rest_timer_state).toBe('corriendo');
+    expect(result.state.session.rest_timer_remaining).toBe(60);
+    expect(result.state.session.rest_timer_ends_at).toBe('2026-11-14T18:01:00.000Z');
+  });
+
+  it('permite arrancar con otra duración y la recuerda', () => {
+    const state = makeThreeExerciseState();
+
+    const result = applyWorkoutEvent(state, {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+      seconds: 90,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.session.rest_timer_seconds).toBe(90);
+    expect(result.state.session.rest_timer_ends_at).toBe('2026-11-14T18:01:30.000Z');
+  });
+
+  it('rechaza duraciones fuera de rango', () => {
+    const state = makeThreeExerciseState();
+
+    for (const seconds of [0, -5, 3601, 1.5]) {
+      const result = applyWorkoutEvent(state, {
+        type: 'REST_TIMER_STARTED',
+        startedAt: '2026-11-14T18:00:00.000Z',
+        seconds,
+      });
+      expect(result).toEqual({ ok: false, error: 'INVALID_TIMER_SECONDS' });
+    }
+  });
+
+  it('rechaza una fecha de inicio inválida', () => {
+    const state = makeThreeExerciseState();
+    const result = applyWorkoutEvent(state, {
+      type: 'REST_TIMER_STARTED',
+      startedAt: 'no-es-una-fecha',
+    });
+
+    expect(result).toEqual({ ok: false, error: 'INVALID_TIMESTAMP' });
+  });
+
+  it('al pausar conserva los segundos restantes', () => {
+    const started = applyWorkoutEvent(makeThreeExerciseState(), {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+    });
+    if (!started.ok) throw new Error('No arrancó');
+
+    const paused = applyWorkoutEvent(started.state, {
+      type: 'REST_TIMER_PAUSED',
+      at: '2026-11-14T18:00:20.000Z',
+    });
+
+    expect(paused.ok).toBe(true);
+    if (!paused.ok) return;
+    expect(paused.state.session.rest_timer_state).toBe('pausado');
+    expect(paused.state.session.rest_timer_remaining).toBe(40);
+    expect(paused.state.session.rest_timer_ends_at).toBeNull();
+  });
+
+  it('no se puede pausar un descanso detenido', () => {
+    const state = makeThreeExerciseState();
+    const result = applyWorkoutEvent(state, {
+      type: 'REST_TIMER_PAUSED',
+      at: '2026-11-14T18:00:20.000Z',
+    });
+
+    expect(result).toEqual({ ok: false, error: 'REST_TIMER_NOT_RUNNING' });
+  });
+
+  it('al reanudar recalcula la hora de fin desde el momento actual', () => {
+    const started = applyWorkoutEvent(makeThreeExerciseState(), {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+    });
+    if (!started.ok) throw new Error('No arrancó');
+
+    const paused = applyWorkoutEvent(started.state, {
+      type: 'REST_TIMER_PAUSED',
+      at: '2026-11-14T18:00:20.000Z',
+    });
+    if (!paused.ok) throw new Error('No pausó');
+
+    const resumed = applyWorkoutEvent(paused.state, {
+      type: 'REST_TIMER_RESUMED',
+      at: '2026-11-14T18:05:00.000Z',
+    });
+
+    expect(resumed.ok).toBe(true);
+    if (!resumed.ok) return;
+    expect(resumed.state.session.rest_timer_state).toBe('corriendo');
+    // Quedaban 40 s: el descanso termina a las 18:05:40.
+    expect(resumed.state.session.rest_timer_ends_at).toBe('2026-11-14T18:05:40.000Z');
+  });
+
+  it('no se puede reanudar un descanso que no está pausado', () => {
+    const state = makeThreeExerciseState();
+    const result = applyWorkoutEvent(state, {
+      type: 'REST_TIMER_RESUMED',
+      at: '2026-11-14T18:05:00.000Z',
+    });
+
+    expect(result).toEqual({ ok: false, error: 'REST_TIMER_NOT_PAUSED' });
+  });
+
+  it('el tick actualiza los segundos y detiene al llegar a cero', () => {
+    const started = applyWorkoutEvent(makeThreeExerciseState(), {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+    });
+    if (!started.ok) throw new Error('No arrancó');
+
+    const mid = applyWorkoutEvent(started.state, {
+      type: 'REST_TIMER_TICKED',
+      now: '2026-11-14T18:00:30.000Z',
+    });
+    expect(mid.ok).toBe(true);
+    if (!mid.ok) return;
+    expect(mid.state.session.rest_timer_remaining).toBe(30);
+    expect(mid.state.session.rest_timer_state).toBe('corriendo');
+
+    // Simula el móvil apagado: han pasado 10 minutos, no 30 segundos.
+    const late = applyWorkoutEvent(mid.state, {
+      type: 'REST_TIMER_TICKED',
+      now: '2026-11-14T18:10:00.000Z',
+    });
+    expect(late.ok).toBe(true);
+    if (!late.ok) return;
+    expect(late.state.session.rest_timer_state).toBe('detenido');
+    expect(late.state.session.rest_timer_remaining).toBe(0);
+    expect(late.state.session.rest_timer_ends_at).toBeNull();
+  });
+
+  it('un tick con el descanso parado no cambia nada ni da error', () => {
+    const state = makeThreeExerciseState();
+    const result = applyWorkoutEvent(state, {
+      type: 'REST_TIMER_TICKED',
+      now: '2026-11-14T18:00:30.000Z',
+    });
+
+    expect(result).toEqual({ ok: true, state });
+  });
+
+  it('detener devuelve el tiempo configurado', () => {
+    const started = applyWorkoutEvent(makeThreeExerciseState(), {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+      seconds: 45,
+    });
+    if (!started.ok) throw new Error('No arrancó');
+
+    const stopped = applyWorkoutEvent(started.state, { type: 'REST_TIMER_STOPPED' });
+
+    expect(stopped.ok).toBe(true);
+    if (!stopped.ok) return;
+    expect(stopped.state.session.rest_timer_state).toBe('detenido');
+    expect(stopped.state.session.rest_timer_remaining).toBe(45);
+    expect(stopped.state.session.rest_timer_ends_at).toBeNull();
+  });
+
+  it('cambiar la duración actualiza lo mostrado solo si está detenido', () => {
+    const stopped = applyWorkoutEvent(makeThreeExerciseState(), {
+      type: 'REST_TIMER_DURATION_CHANGED',
+      seconds: 120,
+    });
+    expect(stopped.ok).toBe(true);
+    if (!stopped.ok) return;
+    expect(stopped.state.session.rest_timer_seconds).toBe(120);
+    expect(stopped.state.session.rest_timer_remaining).toBe(120);
+
+    const started = applyWorkoutEvent(stopped.state, {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+    });
+    if (!started.ok) throw new Error('No arrancó');
+
+    const changed = applyWorkoutEvent(started.state, {
+      type: 'REST_TIMER_DURATION_CHANGED',
+      seconds: 30,
+    });
+    expect(changed.ok).toBe(true);
+    if (!changed.ok) return;
+    expect(changed.state.session.rest_timer_seconds).toBe(30);
+    // La cuenta atrás en marcha no se reinicia de golpe.
+    expect(changed.state.session.rest_timer_remaining).toBe(120);
+  });
+
+  it('getRestTimerRemaining calcula el tiempo con la hora actual', () => {
+    const started = applyWorkoutEvent(makeThreeExerciseState(), {
+      type: 'REST_TIMER_STARTED',
+      startedAt: '2026-11-14T18:00:00.000Z',
+    });
+    if (!started.ok) throw new Error('No arrancó');
+
+    expect(getRestTimerRemaining(started.state, '2026-11-14T18:00:15.000Z')).toBe(45);
+    expect(getRestTimerRemaining(started.state, '2026-11-14T18:02:00.000Z')).toBe(0);
   });
 });
