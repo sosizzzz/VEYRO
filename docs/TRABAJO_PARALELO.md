@@ -126,7 +126,7 @@ Una tarea no pasa a `Hecho` sin typecheck, tests y prueba manual (ver §10).
 | ID | Tarea | Fase | Depende de | Tamaño | Estado |
 |---|---|---|---|---|---|
 | A-01 | Verificar aislamiento entre 2 cuentas (ejercicios y rutinas) | 4 | — | S | Pendiente |
-| A-02 | Motor: estados y transiciones + tests | 5 | C-01 | M | Pendiente |
+| A-02 | Motor: estados y transiciones + tests | 5 | C-01 | M | Hecho |
 | M-01 | Biblioteca UI base: botones, campos, tarjetas, chips, mensajes | 11 | — | M | Pendiente |
 | M-03 | Dominio `performance` + tests de los 4 niveles | 9 | CT-02 | M | Pendiente |
 | M-11 | Enlaces de recuperación de contraseña (Fase 1B) | 1B | — | M | Pendiente |
