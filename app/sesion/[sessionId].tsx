@@ -31,6 +31,7 @@ import {
   type WorkoutEngineState,
 } from '@/domain/workout-engine';
 import { useAuth } from '@/modules/auth';
+import { clearLocalSession, loadLocalSession, saveLocalSession } from '@/data/local';
 import {
   cancelWorkoutSession,
   finishWorkoutSession,
@@ -96,6 +97,47 @@ async function persistChanges(
   await Promise.all(tasks);
 }
 
+/** Convierte el estado del motor en el detalle que se guarda en el móvil. */
+function toWorkoutSessionDetail(state: WorkoutEngineState) {
+  return {
+    ...state.session,
+    participants: state.participants,
+    exercises: state.exercises,
+  };
+}
+
+/**
+ * Guarda primero en el móvil y después en Supabase.
+ *
+ * El orden importa: si se corta la red, el progreso ya está a salvo en el
+ * dispositivo. El aviso de error solo promete eso si el guardado local
+ * funcionó de verdad.
+ */
+async function saveProgress(
+  before: WorkoutEngineState,
+  after: WorkoutEngineState,
+): Promise<void> {
+  let savedOnDevice = false;
+
+  try {
+    await saveLocalSession(toWorkoutSessionDetail(after));
+    savedOnDevice = true;
+  } catch {
+    // Se intenta igualmente la nube; el error de abajo lo explicará.
+  }
+
+  try {
+    await persistChanges(before, after);
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Error de conexión.';
+    throw new Error(
+      savedOnDevice
+        ? `No se pudo sincronizar: ${message} Tu progreso sigue guardado en este móvil.`
+        : `No se pudo guardar el progreso: ${message}`,
+    );
+  }
+}
+
 /** Texto legible del estado de un ejercicio. */
 function exerciseStatusLabel(exercise: SessionExerciseWithSets): string {
   if (exercise.status === 'completado') return 'Completado';
@@ -126,12 +168,30 @@ export default function EntrenamientoScreen() {
 
     (async () => {
       try {
+        // 1) Primero el móvil: puede tener cambios que aún no llegaron a la nube.
+        const local = await loadLocalSession(sessionId);
+        if (cancelled) return;
+
+        if (local && local.status === 'en_curso') {
+          setState(createWorkoutEngineState(local));
+          return;
+        }
+
+        // 2) Si no hay copia local útil, se pide a Supabase.
         const detail = await getWorkoutSessionDetail(sessionId);
         if (cancelled) return;
         if (!detail) {
           setError('No se encontró la sesión.');
           return;
         }
+
+        // Se cachea para poder reabrirla aunque se caiga la conexión.
+        if (detail.status === 'en_curso') {
+          saveLocalSession(detail).catch(() => {
+            // No es grave: la sesión sigue disponible en la nube.
+          });
+        }
+
         setState(createWorkoutEngineState(detail));
       } catch (cause) {
         if (!cancelled) {
@@ -168,8 +228,10 @@ export default function EntrenamientoScreen() {
       if (!result.ok) return;
 
       setState(result.state);
-      persistChanges(current, result.state).catch((cause) => {
-        setError(cause instanceof Error ? cause.message : 'No se pudo guardar el descanso.');
+      saveProgress(current, result.state).catch((cause) => {
+        setError(
+          cause instanceof Error ? cause.message : 'No se pudo guardar el descanso.',
+        );
       });
     }, 1000);
 
@@ -205,11 +267,11 @@ export default function EntrenamientoScreen() {
     setState(result.state);
 
     try {
-      await persistChanges(state, result.state);
+      await saveProgress(state, result.state);
     } catch (cause) {
       setError(
         cause instanceof Error
-          ? `No se pudo guardar: ${cause.message}`
+          ? cause.message
           : 'No se pudo guardar el progreso.',
       );
     }
@@ -260,11 +322,11 @@ export default function EntrenamientoScreen() {
     setNow(nowIso());
 
     try {
-      await persistChanges(state, nextState);
+      await saveProgress(state, nextState);
     } catch (cause) {
       setError(
         cause instanceof Error
-          ? `No se pudo guardar la serie: ${cause.message}`
+          ? cause.message
           : 'No se pudo guardar la serie.',
       );
     } finally {
@@ -287,6 +349,10 @@ export default function EntrenamientoScreen() {
             setSaving(true);
             try {
               await cancelWorkoutSession(sessionId);
+              // Solo se borra la copia local cuando la nube confirmó.
+              await clearLocalSession(sessionId).catch(() => {
+                // Si fallara, la sesión remota igualmente está cancelada.
+              });
               router.replace('/(tabs)');
             } catch (cause) {
               setError(cause instanceof Error ? cause.message : 'No se pudo cancelar.');
@@ -318,6 +384,12 @@ export default function EntrenamientoScreen() {
           try {
             const finishedAt = nowIso();
             await finishWorkoutSession(sessionId, finishedAt);
+
+            // La nube ya confirmó el cierre: la copia local ya no hace falta.
+            await clearLocalSession(sessionId).catch(() => {
+              // Si fallara, la sesión remota igualmente está finalizada.
+            });
+
             setState({
               ...state,
               currentExerciseId: null,

@@ -15,3 +15,5 @@ export {
   startSessionFromRoutine,
   type StartSessionOptions,
 } from './services/sessionService';
+
+export type { WorkoutSessionDetail } from '@/types/workout';
