@@ -102,12 +102,12 @@ Si una decisión no está tomada, la tarea no empieza: se cambia por otra y se a
 
 ## 5. Bloque 0 · Contrato de sesiones (juntos, antes de separarse)
 
-| ID | Tarea | Dueño | Depende de | Tamaño |
-|---|---|---|---|---|
-| C-01 | Tipos de sesión en `src/types/workout.ts` | Adrián | — | S |
-| C-02 | Migración `006_sessions.sql`: 4 tablas, RLS e índices (`DATABASE.md` §2.7–2.10) | Adrián | C-01 | M |
-| C-03 | Datos falsos en `src/data/fixtures/` para pintar sin base de datos | María | C-01 | S |
-| C-04 | Revisión cruzada: María revisa C-01/C-02; Adrián revisa C-03 | ambos | C-01…C-03 | S |
+| ID | Tarea | Dueño | Depende de | Tamaño | Estado |
+|---|---|---|---|---|---|
+| C-01 | Tipos de sesión en `src/types/workout.ts` | Adrián | — | S | Hecho |
+| C-02 | Migración `006_sessions.sql`: 4 tablas, RLS e índices (`DATABASE.md` §2.7–2.10) | Adrián | C-01 | M | En revisión (SQL listo; falta aplicarlo) |
+| C-03 | Datos falsos en `src/data/fixtures/` para pintar sin base de datos | María | C-01 | S | Hecho |
+| C-04 | Revisión cruzada: María revisa C-01/C-02; Adrián revisa C-03 | ambos | C-01…C-03 | S | Pendiente |
 
 **Corrección pendiente:** `DATABASE.md` dice `session_exercises.primary_muscle` (singular), pero los ejercicios ya usan `primary_muscles` (lista de 1 a 3). En `006` la copia será `primary_muscles text[]` y se actualiza el documento en el mismo PR.
 
