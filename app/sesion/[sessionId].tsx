@@ -395,7 +395,20 @@ export default function EntrenamientoScreen() {
               currentExerciseId: null,
               session: { ...state.session, status: 'finalizada', finished_at: finishedAt },
             });
-            router.replace('/(tabs)');
+
+            // Sin este aviso, volver a Inicio parece que “no ha pasado nada”.
+            // La pantalla de resumen llegará en la Fase 8.
+            Alert.alert(
+              'Entrenamiento guardado',
+              'Tu sesión se ha finalizado y guardado correctamente.',
+              [
+                {
+                  text: 'Volver al inicio',
+                  onPress: () => router.replace('/(tabs)'),
+                },
+              ],
+              { cancelable: false },
+            );
           } catch (cause) {
             setError(
               cause instanceof Error ? cause.message : 'No se pudo finalizar la sesión.',
@@ -535,45 +548,35 @@ export default function EntrenamientoScreen() {
               />
             ))}
 
-            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
-              <View style={{ flex: 1 }}>
-                <Button
-                  label="Saltar ejercicio"
-                  variant="ghost"
-                  disabled={saving}
-                  onPress={() =>
-                    void runEvent({
-                      type: 'EXERCISE_SKIPPED',
-                      exerciseId: currentExercise.id,
-                    })
-                  }
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Button
-                  label="Omitir ejercicio"
-                  variant="ghost"
-                  disabled={saving}
-                  onPress={() =>
-                    Alert.alert(
-                      'Omitir ejercicio',
-                      'Se marcará como omitido en esta sesión. No volverá a aparecer.',
-                      [
-                        { text: 'Cancelar', style: 'cancel' },
-                        {
-                          text: 'Omitir',
-                          style: 'destructive',
-                          onPress: () =>
-                            void runEvent({
-                              type: 'EXERCISE_OMITTED',
-                              exerciseId: currentExercise.id,
-                            }),
-                        },
-                      ],
-                    )
-                  }
-                />
-              </View>
+            {/*
+              Antes había un botón “Saltar ejercicio”. Se quitó porque el
+              selector de arriba ya permite cambiar de ejercicio, y “saltar”
+              no aportaba nada distinto: el ejercicio seguía pendiente.
+            */}
+            <View style={{ marginTop: spacing.md }}>
+              <Button
+                label="Omitir ejercicio"
+                variant="ghost"
+                disabled={saving}
+                onPress={() =>
+                  Alert.alert(
+                    'Omitir ejercicio',
+                    'Se marcará como omitido en esta sesión. No volverá a aparecer.',
+                    [
+                      { text: 'Cancelar', style: 'cancel' },
+                      {
+                        text: 'Omitir',
+                        style: 'destructive',
+                        onPress: () =>
+                          void runEvent({
+                            type: 'EXERCISE_OMITTED',
+                            exerciseId: currentExercise.id,
+                          }),
+                      },
+                    ],
+                  )
+                }
+              />
             </View>
           </View>
         ) : (
