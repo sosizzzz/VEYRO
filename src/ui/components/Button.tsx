@@ -7,7 +7,7 @@
  */
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
 
-import { useTheme } from '../theme';
+import { fontFamilies, useTheme } from '../theme';
 
 type ButtonProps = {
   /** Texto del botón. */
@@ -81,6 +81,6 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   label: {
-    fontWeight: '600',
+    fontFamily: fontFamilies.semibold,
   },
 });

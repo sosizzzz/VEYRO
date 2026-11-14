@@ -23,7 +23,7 @@ import type { Exercise } from '@/modules/exercises';
 import { Button } from '@/ui/components/Button';
 import { FormMessage } from '@/ui/components/FormMessage';
 import { TextField } from '@/ui/components/TextField';
-import { useTheme } from '@/ui/theme';
+import { fontFamilies, useTheme } from '@/ui/theme';
 
 import { routineDraftSchema, type RoutineDraftValues } from '../validation';
 
@@ -394,7 +394,7 @@ export function RoutineForm({
             },
           ]}
         >
-          <Text style={[typography.body, { color: colors.text, fontWeight: '600' }]}>
+          <Text style={[typography.body, { color: colors.text, fontFamily: fontFamilies.semibold }]}>
             {exerciseIndex + 1}. {exercise.exerciseName ?? 'Ejercicio'}
           </Text>
 
@@ -454,7 +454,7 @@ export function RoutineForm({
                 { borderColor: colors.border, borderRadius: radius.sm ?? 8, marginTop: spacing.sm },
               ]}
             >
-              <Text style={[typography.caption, { color: colors.textMuted, fontWeight: '600' }]}>
+              <Text style={[typography.caption, { color: colors.textMuted, fontFamily: fontFamilies.semibold }]}>
                 Serie {setIndex + 1}
               </Text>
 
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   setCard: { borderWidth: 1, padding: 10 },
   targetRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
   checkbox: { width: 22, height: 22, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  checkmark: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  checkmark: { color: '#FFFFFF', fontSize: 13, fontFamily: fontFamilies.bold },
   targetLabel: { width: 96 },
   targetInput: { flex: 1, borderWidth: 1, minHeight: 40 },
 });

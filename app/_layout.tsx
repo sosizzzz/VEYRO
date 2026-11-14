@@ -10,6 +10,12 @@
  */
 import { Redirect, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import {
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+  useFonts,
+} from '@expo-google-fonts/inter';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -21,6 +27,19 @@ import { LoadingScreen } from '@/ui/components/LoadingScreen';
 export { ErrorBoundary } from 'expo-router';
 
 export default function RootLayout() {
+  // Carga las tres variantes de Inter antes de pintar pantallas. Mientras
+  // tanto se muestra la pantalla de carga: así no se ve un cambio de letra.
+  const [fontsLoaded, fontError] = useFonts({
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
+
+  if (!fontsLoaded && !fontError) {
+    return <LoadingScreen message="Preparando VEYRO…" />;
+  }
+
+  // Si la fuente fallara, seguimos con la del sistema en vez de bloquear la app.
   return (
     <SafeAreaProvider>
       <AuthProvider>
