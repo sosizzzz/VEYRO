@@ -275,3 +275,8 @@ grant select, insert, update on public.workout_sessions to authenticated;
 grant select, insert, update on public.session_participants to authenticated;
 grant select, insert, update on public.session_exercises to authenticated;
 grant select, insert, update on public.session_sets to authenticated;
+
+-- Avisa a la API (PostgREST) de que hay tablas nuevas. Sin esto, la app puede
+-- recibir "Could not find the table ... in the schema cache" hasta que el
+-- servidor se reinicie. Es inofensivo ejecutarlo varias veces.
+notify pgrst, 'reload schema';

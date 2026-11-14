@@ -1,12 +1,12 @@
 /**
- * Gestión: acceso a Rutinas y Ejercicios, ajustes y datos de la sesión.
+ * Gestión: acceso a Rutinas, Ejercicios, Ajustes y Cuenta.
  *
- * Las dos acciones principales son tarjetas grandes con ilustración para que
- * se puedan pulsar cómodamente con el pulgar. El resto de la pantalla mantiene
- * información de la cuenta y el cierre de sesión.
+ * Todas las acciones son tarjetas grandes con ilustración para que se puedan
+ * pulsar cómodamente con el pulgar. La tarjeta de Cuenta muestra el nombre y
+ * el correo de la sesión actual; los detalles y el cierre de sesión están en
+ * su propia pantalla.
  */
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import {
   ImageBackground,
   Pressable,
@@ -17,9 +17,7 @@ import {
   type ImageSourcePropType,
 } from 'react-native';
 
-import { translateAuthError, useAuth } from '@/modules/auth';
-import { Button } from '@/ui/components/Button';
-import { FormMessage } from '@/ui/components/FormMessage';
+import { useAuth } from '@/modules/auth';
 import { Screen } from '@/ui/components/Screen';
 import { useTheme } from '@/ui/theme';
 
@@ -69,6 +67,9 @@ function MenuCard({
                 typography.body,
                 { color: 'rgba(255,255,255,0.85)', marginTop: spacing.xs },
               ]}
+              // El correo puede ser largo: una sola línea evita que la tarjeta
+              // crezca y rompa la altura común de todas.
+              numberOfLines={1}
             >
               {subtitle}
             </Text>
@@ -82,72 +83,18 @@ function MenuCard({
   );
 }
 
-/** Fila compacta para acciones secundarias (por ejemplo, Ajustes). */
-function MenuRow({
-  title,
-  subtitle,
-  href,
-}: {
-  title: string;
-  subtitle: string;
-  href: string;
-}) {
-  const { colors, spacing, radius, typography } = useTheme();
-  const router = useRouter();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={`${title}. ${subtitle}`}
-      onPress={() => router.push(href as never)}
-      style={({ pressed }) => [
-        styles.row,
-        {
-          backgroundColor: colors.surface,
-          borderColor: colors.border,
-          borderRadius: radius.md,
-          padding: spacing.md,
-          marginTop: spacing.lg,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
-    >
-      <View style={{ flex: 1 }}>
-        <Text style={[typography.subtitle, { color: colors.text }]}>{title}</Text>
-        <Text style={[typography.caption, { color: colors.textMuted, marginTop: 2 }]}>
-          {subtitle}
-        </Text>
-      </View>
-      <Text style={[typography.subtitle, { color: colors.textMuted }]}>›</Text>
-    </Pressable>
-  );
-}
-
 export default function GestionScreen() {
-  const { profile, user, signOut } = useAuth();
-  const { colors, spacing, radius, typography } = useTheme();
+  const { profile, user } = useAuth();
+  const { spacing } = useTheme();
 
-  const [error, setError] = useState<string | null>(null);
-  const [isSigningOut, setIsSigningOut] = useState(false);
-
+  // En la tarjeta de cuenta se ve de un vistazo quién ha iniciado sesión.
   const nombreVisible = profile?.display_name ?? 'Cargando perfil…';
-
-  async function handleSignOut() {
-    setError(null);
-    setIsSigningOut(true);
-    try {
-      await signOut();
-    } catch (caught) {
-      setError(translateAuthError(caught));
-    } finally {
-      setIsSigningOut(false);
-    }
-  }
+  const cuentaSubtitle = user?.email ? `${nombreVisible} · ${user.email}` : nombreVisible;
 
   return (
     <Screen
       title="Gestión"
-      description="Accede a tus rutinas y a tu biblioteca de ejercicios."
+      description="Accede a tus rutinas, ejercicios y preferencias."
     >
       {/* En pantallas pequeñas el contenido no cabe entero: se puede deslizar. */}
       <ScrollView
@@ -168,47 +115,17 @@ export default function GestionScreen() {
             image={require('../../../assets/images/card-ejercicios.png')}
             href="/(tabs)/gestion/ejercicios"
           />
-        </View>
-
-        {/* Ajustes queda justo encima del bloque de la cuenta. */}
-        <MenuRow
-          title="Ajustes"
-          subtitle="Preferencias de la aplicación"
-          href="/(tabs)/gestion/ajustes"
-        />
-
-        <View
-          style={[
-            styles.accountCard,
-            {
-              backgroundColor: colors.surface,
-              borderColor: colors.border,
-              borderRadius: radius.md,
-              padding: spacing.md,
-              marginTop: spacing.md,
-            },
-          ]}
-        >
-          <Text style={[typography.caption, { color: colors.textMuted }]}>
-            SESIÓN INICIADA COMO
-          </Text>
-          <Text style={[typography.subtitle, { color: colors.text, marginTop: spacing.xs }]}>
-            {nombreVisible}
-          </Text>
-          {user?.email ? (
-            <Text style={[typography.caption, { color: colors.textMuted, marginTop: 2 }]}>
-              {user.email}
-            </Text>
-          ) : null}
-        </View>
-
-        <View style={{ marginTop: spacing.lg }}>
-          {error ? <FormMessage tone="error">{error}</FormMessage> : null}
-          <Button
-            label="Cerrar sesión"
-            variant="ghost"
-            onPress={handleSignOut}
-            loading={isSigningOut}
+          <MenuCard
+            title="Ajustes"
+            subtitle="Preferencias de la aplicación"
+            image={require('../../../assets/images/card-ajustes.png')}
+            href="/(tabs)/gestion/ajustes"
+          />
+          <MenuCard
+            title="Cuenta"
+            subtitle={cuentaSubtitle}
+            image={require('../../../assets/images/card-cuenta.png')}
+            href="/(tabs)/gestion/cuenta"
           />
         </View>
       </ScrollView>
@@ -235,13 +152,5 @@ const styles = StyleSheet.create({
   chevron: {
     fontSize: 34,
     lineHeight: 34,
-  },
-  row: {
-    borderWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  accountCard: {
-    borderWidth: 1,
   },
 });
