@@ -5,7 +5,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { useAuth } from '@/modules/auth';
 import {
   MUSCLE_GROUPS,
   archiveExercise,
@@ -24,7 +23,6 @@ import { useTheme } from '@/ui/theme';
 export default function EditarEjercicioScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, spacing, typography } = useTheme();
-  const { user } = useAuth();
   const router = useRouter();
 
   const [values, setValues] = useState<ExerciseFormValues>({

@@ -7,6 +7,7 @@ export type {
   RoutineSetTarget,
 } from './types';
 export { routineDraftSchema, routineNameSchema, type RoutineDraftValues } from './validation';
+export { RoutineForm } from './components/RoutineForm';
 export {
   archiveRoutine,
   getRoutineDetail,

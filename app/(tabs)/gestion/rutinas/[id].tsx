@@ -1,18 +1,13 @@
 /**
- * Editar rutina (carga detalle y guarda cambios).
+ * Pantalla "Editar rutina".
+ *
+ * Carga la rutina desde Supabase, la convierte al formato del formulario,
+ * y deja que `RoutineForm` haga el resto (igual que en "Nueva rutina").
+ * Además permite archivar o recuperar la rutina.
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Text } from 'react-native';
 
 import { useAuth } from '@/modules/auth';
 import { listActiveExercises, type Exercise } from '@/modules/exercises';
@@ -20,31 +15,18 @@ import {
   archiveRoutine,
   getRoutineDetail,
   restoreRoutine,
-  routineDraftSchema,
+  RoutineForm,
   saveRoutine,
   type RoutineDraftValues,
 } from '@/modules/routines';
 import { Button } from '@/ui/components/Button';
 import { FormMessage } from '@/ui/components/FormMessage';
 import { Screen } from '@/ui/components/Screen';
-import { TextField } from '@/ui/components/TextField';
 import { useTheme } from '@/ui/theme';
-
-const DAYS: { n: number; label: string }[] = [
-  { n: 1, label: 'L' }, { n: 2, label: 'M' }, { n: 3, label: 'X' },
-  { n: 4, label: 'J' }, { n: 5, label: 'V' }, { n: 6, label: 'S' }, { n: 7, label: 'D' },
-];
-
-function numOrNull(v: string): number | null {
-  const t = v.trim().replace(',', '.');
-  if (!t) return null;
-  const n = Number(t);
-  return Number.isFinite(n) ? n : null;
-}
 
 export default function EditarRutinaScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { colors, spacing, radius, typography } = useTheme();
+  const { colors, spacing } = useTheme();
   const { user } = useAuth();
   const router = useRouter();
   const ownerId = user?.id;
@@ -52,134 +34,75 @@ export default function EditarRutinaScreen() {
   const [library, setLibrary] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState<RoutineDraftValues | null>(null);
-  // Si la rutina está archivada, la ocultamos del listado pero se puede recuperar.
+  // Si la rutina está archivada se puede recuperar, pero no usar para entrenar.
   const [archived, setArchived] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     if (!ownerId) return;
+
+    let cancelled = false;
+
     (async () => {
       try {
-        const [lib, detail] = await Promise.all([
+        const [exercises, detail] = await Promise.all([
           listActiveExercises(ownerId),
           id ? getRoutineDetail(id) : Promise.resolve(null),
         ]);
-        setLibrary(lib);
+
+        if (cancelled) return;
+
+        setLibrary(exercises);
+
         if (!detail) {
           setError('Rutina no encontrada.');
-        } else {
-          setArchived(!!detail.archived_at);
-          setDraft({
-            name: detail.name,
-            description: detail.description ?? '',
-            weekdays: detail.weekdays ?? [],
-            exercises: (detail.exercises ?? []).map((ex) => ({
-              exercise_id: ex.exercise_id,
-              exercise_name: ex.exercise_name,
-              sets:
-                ex.sets && ex.sets.length > 0
-                  ? ex.sets.map((s, i) => ({
-                      set_number: s.set_number ?? i + 1,
-                      target_weight: s.target_weight ?? null,
-                      target_reps: s.target_reps ?? null,
-                      target_time_seconds: s.target_time_seconds ?? null,
-                    }))
-                  : [{ set_number: 1, target_weight: null, target_reps: null, target_time_seconds: null }],
-            })),
-          });
+          return;
         }
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'No se pudo cargar.');
+
+        setArchived(Boolean(detail.archived_at));
+        setDraft({
+          name: detail.name,
+          description: detail.description ?? '',
+          weekdays: [...(detail.weekdays ?? [])].sort((a, b) => a - b),
+          exercises: (detail.exercises ?? []).map((exercise) => ({
+            exercise_id: exercise.exercise_id,
+            exercise_name: exercise.exercise_name,
+            sets:
+              exercise.sets && exercise.sets.length > 0
+                ? exercise.sets.map((set, index) => ({
+                    set_number: set.set_number ?? index + 1,
+                    target_weight: set.target_weight ?? null,
+                    target_reps: set.target_reps ?? null,
+                    target_time_seconds: set.target_time_seconds ?? null,
+                  }))
+                : [
+                    {
+                      set_number: 1,
+                      target_weight: null,
+                      target_reps: null,
+                      target_time_seconds: null,
+                    },
+                  ],
+          })),
+        });
+      } catch (cause) {
+        if (!cancelled) {
+          setError(cause instanceof Error ? cause.message : 'No se pudo cargar la rutina.');
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id, ownerId]);
-
-  function toggleDay(n: number) {
-    setDraft((d) => d && ({
-      ...d,
-      weekdays: d.weekdays.includes(n) ? d.weekdays.filter((x) => x !== n) : [...d.weekdays, n].sort((a, b) => a - b),
-    }));
-  }
-
-  function addExercise(ex: Exercise) {
-    setDraft((d) => d && ({
-      ...d,
-      exercises: [...d.exercises, { exercise_id: ex.id, exercise_name: ex.name, sets: [
-        { set_number: 1, target_weight: null, target_reps: null, target_time_seconds: null },
-        { set_number: 2, target_weight: null, target_reps: null, target_time_seconds: null },
-        { set_number: 3, target_weight: null, target_reps: null, target_time_seconds: null },
-      ]}],
-    }));
-    setPickerOpen(false);
-  }
-
-  function moveExercise(idx: number, dir: -1 | 1) {
-    setDraft((d) => {
-      if (!d) return d;
-      const arr = [...d.exercises];
-      const j = idx + dir;
-      if (j < 0 || j >= arr.length) return d;
-      [arr[idx], arr[j]] = [arr[j], arr[idx]];
-      return { ...d, exercises: arr };
-    });
-  }
-
-  function removeExercise(idx: number) {
-    setDraft((d) => d && ({ ...d, exercises: d.exercises.filter((_, i) => i !== idx) }));
-  }
-
-  function setSetCount(idx: number, count: number) {
-    const n = Math.max(1, Math.min(20, Math.floor(count) || 1));
-    setDraft((d) => {
-      if (!d) return d;
-      const arr = [...d.exercises];
-      const ex = { ...arr[idx], sets: [...arr[idx].sets] };
-      while (ex.sets.length < n) ex.sets.push({ set_number: ex.sets.length + 1, target_weight: null, target_reps: null, target_time_seconds: null });
-      if (ex.sets.length > n) ex.sets = ex.sets.slice(0, n);
-      ex.sets = ex.sets.map((s, i) => ({ ...s, set_number: i + 1 }));
-      arr[idx] = ex;
-      return { ...d, exercises: arr };
-    });
-  }
-
-  function setTarget(idx: number, setIdx: number, field: 'target_weight' | 'target_reps' | 'target_time_seconds', raw: string) {
-    setDraft((d) => {
-      if (!d) return d;
-      const arr = [...d.exercises];
-      const ex = { ...arr[idx], sets: arr[idx].sets.map((s) => ({ ...s })) };
-      const val = numOrNull(raw);
-      ex.sets[setIdx] = { ...ex.sets[setIdx], [field]: field === 'target_weight' ? val : (val == null ? null : Math.round(val)) };
-      arr[idx] = ex;
-      return { ...d, exercises: arr };
-    });
-  }
-
-  async function handleSave() {
-    if (!ownerId || !id || !draft) return;
-    setError(null);
-    const parsed = routineDraftSchema.safeParse(draft);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0]?.message ?? 'Revisa los datos.');
-      return;
-    }
-    setSaving(true);
-    try {
-      await saveRoutine(ownerId, id, parsed.data);
-      router.back();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'No se pudo guardar.');
-    } finally {
-      setSaving(false);
-    }
-  }
 
   /** Archiva (oculta, no borra) o recupera la rutina, con confirmación al archivar. */
   async function handleArchiveToggle() {
     if (!id) return;
+
     if (!archived) {
       Alert.alert(
         'Archivar rutina',
@@ -193,110 +116,60 @@ export default function EditarRutinaScreen() {
               try {
                 await archiveRoutine(id);
                 router.back();
-              } catch (e) {
-                setError(e instanceof Error ? e.message : 'No se pudo archivar.');
+              } catch (cause) {
+                setError(cause instanceof Error ? cause.message : 'No se pudo archivar.');
               }
             },
           },
         ],
       );
-    } else {
-      try {
-        await restoreRoutine(id);
-        router.back();
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'No se pudo recuperar.');
-      }
+      return;
+    }
+
+    try {
+      await restoreRoutine(id);
+      router.back();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo recuperar.');
     }
   }
 
   if (loading || !draft) {
     return (
       <Screen title="Rutina" description={loading ? 'Cargando…' : ''}>
-        {loading ? <ActivityIndicator color={colors.primary} style={{ marginTop: 24 }} /> : error ? <Text style={{ color: colors.danger, marginTop: 16 }}>{error}</Text> : null}
+        {loading ? (
+          <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
+        ) : (
+          <Text style={{ color: colors.danger, marginTop: spacing.md }}>{error}</Text>
+        )}
       </Screen>
     );
   }
 
   return (
     <Screen title="Editar rutina" description="Modifica ejercicios, objetivos y días.">
-      <ScrollView style={{ flex: 1, marginTop: spacing.md }} keyboardShouldPersistTaps="handled">
-        {error ? <FormMessage tone="error">{error}</FormMessage> : null}
-        <TextField label="Nombre" value={draft.name} onChangeText={(t) => setDraft((d) => d && ({ ...d, name: t }))} />
-        <TextField label="Descripción (opcional)" value={draft.description ?? ''} onChangeText={(t) => setDraft((d) => d && ({ ...d, description: t }))} />
+      {error ? <FormMessage tone="error">{error}</FormMessage> : null}
 
-        <Text style={[typography.caption, { color: colors.textMuted, marginTop: spacing.md }]}>Días planificados</Text>
-        <View style={styles.chips}>
-          {DAYS.map((d) => {
-            const sel = draft.weekdays.includes(d.n);
-            return (
-              <Pressable key={d.n} onPress={() => toggleDay(d.n)} style={[styles.chip, { borderColor: sel ? colors.primary : colors.border, backgroundColor: sel ? colors.primary : colors.surface }]}>
-                <Text style={[typography.caption, { color: sel ? colors.background : colors.text }]}>{d.label}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+      <RoutineForm
+        initialDraft={draft}
+        library={library}
+        submitLabel="Guardar cambios"
+        onSubmit={async (values) => {
+          if (!ownerId || !id) {
+            throw new Error('Falta la rutina o la sesión. Vuelve a intentarlo.');
+          }
 
-        <Text style={[typography.caption, { color: colors.textMuted, marginTop: spacing.lg }]}>Ejercicios</Text>
-        {draft.exercises.map((ex, idx) => (
-          <View key={`${ex.exercise_id}-${idx}`} style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.sm, marginTop: spacing.sm }]}>
-            <Text style={[typography.body, { color: colors.text }]}>{idx + 1}. {ex.exercise_name ?? ex.exercise_id}</Text>
-            <View style={{ flexDirection: 'row', gap: 12, marginTop: 6 }}>
-              <Pressable onPress={() => moveExercise(idx, -1)}><Text style={{ color: colors.primary }}>Subir</Text></Pressable>
-              <Pressable onPress={() => moveExercise(idx, 1)}><Text style={{ color: colors.primary }}>Bajar</Text></Pressable>
-              <Pressable onPress={() => removeExercise(idx)}><Text style={{ color: colors.danger }}>Quitar</Text></Pressable>
-            </View>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8 }}>
-              <Text style={[typography.caption, { color: colors.textMuted }]}>Series: </Text>
-              <TextInput value={String(ex.sets.length)} onChangeText={(t) => setSetCount(idx, Number(t))} keyboardType="number-pad" style={[styles.smallInput, { borderColor: colors.border, color: colors.text }]} />
-            </View>
-            {ex.sets.map((s, si) => (
-              <View key={si} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                <Text style={[typography.caption, { color: colors.textMuted, width: 20 }]}>{s.set_number}</Text>
-                <TextInput placeholder="kg" placeholderTextColor={colors.textMuted} defaultValue={s.target_weight != null ? String(s.target_weight) : ''} onChangeText={(t) => setTarget(idx, si, 'target_weight', t)} keyboardType="decimal-pad" style={[styles.smallInput, { borderColor: colors.border, color: colors.text, flex: 1 }]} />
-                <TextInput placeholder="reps" placeholderTextColor={colors.textMuted} defaultValue={s.target_reps != null ? String(s.target_reps) : ''} onChangeText={(t) => setTarget(idx, si, 'target_reps', t)} keyboardType="number-pad" style={[styles.smallInput, { borderColor: colors.border, color: colors.text, flex: 1 }]} />
-                <TextInput placeholder="seg" placeholderTextColor={colors.textMuted} defaultValue={s.target_time_seconds != null ? String(s.target_time_seconds) : ''} onChangeText={(t) => setTarget(idx, si, 'target_time_seconds', t)} keyboardType="number-pad" style={[styles.smallInput, { borderColor: colors.border, color: colors.text, flex: 1 }]} />
-              </View>
-            ))}
-          </View>
-        ))}
-
-        <View style={{ marginTop: spacing.sm }}>
-          <Button label={pickerOpen ? 'Cerrar selector' : 'Añadir ejercicio'} variant="ghost" onPress={() => setPickerOpen((v) => !v)} />
-        </View>
-        {pickerOpen ? (
-          <View style={[styles.card, { borderColor: colors.border, borderRadius: radius.md, padding: spacing.sm, marginTop: spacing.xs }]}>
-            {library.length === 0 ? (
-              <Text style={{ color: colors.textMuted }}>No hay ejercicios activos.</Text>
-            ) : (
-              library.map((ex) => (
-                <Pressable key={ex.id} onPress={() => addExercise(ex)} style={{ paddingVertical: 8 }}>
-                  <Text style={{ color: colors.text }}>{ex.name}</Text>
-                  <Text style={{ color: colors.textMuted, fontSize: 12 }}>{(ex.primary_muscles ?? []).join(', ')}</Text>
-                </Pressable>
-              ))
-            )}
-          </View>
-        ) : null}
-
-        <View style={{ marginTop: spacing.lg }}>
-          <Button label="Guardar cambios" onPress={handleSave} loading={saving} />
-        </View>
-        <View style={{ marginTop: spacing.sm, marginBottom: spacing.xl }}>
+          await saveRoutine(ownerId, id, values);
+          router.back();
+        }}
+        footer={
           <Button
             label={archived ? 'Recuperar rutina' : 'Archivar rutina'}
             variant="ghost"
             onPress={handleArchiveToggle}
           />
-        </View>
-      </ScrollView>
+        }
+      />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
-  chip: { borderWidth: 1, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 },
-  card: { borderWidth: 1 },
-  smallInput: { borderWidth: 1, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4, minWidth: 48 },
-});
