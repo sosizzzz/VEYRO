@@ -137,14 +137,16 @@ En el MVP cada sesión tiene **exactamente una fila**. Es la pieza que permite p
 | `session_id` | uuid, FK → `workout_sessions.id` | |
 | `exercise_id` | uuid, FK → `exercises.id` | Referencia al original |
 | `exercise_name` | text | Copia del nombre en el momento de empezar |
-| `primary_muscle` | text | Copia |
+| `primary_muscles` | text[] | Copia; 1 a 3 músculos del catálogo |
 | `icon` | text, opcional | Copia |
 | `position` | integer | Orden original |
 | `status` | text | `pendiente`, `saltado`, `omitido`, `completado` |
 
 **Restricción:** `UNIQUE (session_id, position)`.
 
-**Por qué se copian nombre, músculo e icono:** si el ejercicio se archiva o se renombra, el historial sigue explicando qué se entrenó aquel día.
+**Por qué se copian nombre, músculos e icono:** si el ejercicio se archiva o se renombra, el historial sigue explicando qué se entrenó aquel día.
+
+**Corrección:** los ejercicios usan `primary_muscles` (lista) desde la migración 003. La copia de la sesión usa la misma lista para no romper la comparación ni el historial. Ver IN-011.
 
 ### 2.10. `session_sets` · series y resultados
 
@@ -238,8 +240,7 @@ Si `synced_at` está vacío, la operación no está sincronizada, diga lo que di
 
 Nada de esto se implementa hasta que se apruebe:
 
-1. **Catálogo de músculos.** PROJECT.md pide "músculo principal" pero no define la lista de valores.
-2. **Borrado permanente de ejercicios.** El MVP solo archiva.
-3. **Campos del perfil.** Solo se aprueba nombre visible y avatar opcional.
-4. **Indicador agregado de comparación** cuando unas métricas mejoran y otras empeoran (afecta a cálculos, no al esquema).
-5. **Modelo de sesiones compartidas.** Se diseña al aprobar esa fase; lo actual solo deja el hueco preparado.
+1. **Borrado permanente de ejercicios.** El MVP solo archiva.
+2. **Campos del perfil.** Solo se aprueba nombre visible y avatar opcional.
+3. **Indicador agregado de comparación** cuando unas métricas mejoran y otras empeoran (afecta a cálculos, no al esquema).
+4. **Modelo de sesiones compartidas.** Se diseña al aprobar esa fase; lo actual solo deja el hueco preparado.

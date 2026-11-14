@@ -71,6 +71,19 @@ Formato de cada decisión:
 - **Por qué:** es coherente con ejercicios, es reversible y evita romper referencias cuando existan sesiones e historial (el modelo ya prevé `workout_sessions.routine_id`).
 - **Consecuencias:** `routines` tiene `archived_at` (migración 005). Existe listado de archivadas con “Recuperar” y acción “Archivar” (con confirmación) en la edición. No hay borrado definitivo en el MVP.
 
+### IN-011 · Catálogo cerrado de músculos y hasta 3 músculos por ejercicio
+
+- **Contexto:** PROJECT.md pedía un “músculo principal”, pero no definía la lista. Sin una lista cerrada no se podía validar ni agrupar el catálogo.
+- **Decisión:** el catálogo se agrupa en cuatro zonas:
+  - **Tren superior:** Pecho, Espalda, Hombros, Bíceps, Tríceps, Antebrazos.
+  - **Tren inferior:** Cuádriceps, Isquiosurales, Glúteos, Aductores, Gemelos.
+  - **Zona media:** Core, Lumbar.
+  - **Categorías generales:** Cuerpo completo, Cardio, Otros.
+
+  Cada ejercicio declara **entre 1 y 3 músculos principales**, sin repetidos. En el listado, el ejercicio aparece **una sola vez por zona** (aunque tenga varios músculos de esa zona), para no duplicar filas.
+- **Por qué:** un ejercicio real trabaja varios músculos (por ejemplo, dominadas: espalda, bíceps y antebrazos). Obligar a uno solo falsea el catálogo; permitir texto libre impide agrupar y validar.
+- **Consecuencias:** `exercises.primary_muscles` es una lista (`text[]`) con restricción de 1 a 3 y valores del catálogo (migración 003). La copia de la sesión usa la misma lista. La interfaz de creación y edición permite marcar y desmarcar músculos con un tope de 3.
+
 ### PR-001 · Código comentado en lenguaje sencillo
 
 - **Contexto:** quien dirige el proyecto está aprendiendo a programar y necesita entender el código, no solo que funcione.
@@ -132,7 +145,6 @@ Formato de cada decisión:
 
 1. Comparación serie con serie frente a mejor serie cuando cambia el número de series.
 2. Si "más tiempo" es mejora o empeoramiento según el ejercicio.
-3. Catálogo de músculos.
-4. Método de recuperación de contraseña y verificación de correo (forma concreta).
-5. Uso sin conexión de rutinas y ejercicios ya guardados (solo la sesión en curso está garantizada).
-6. Todo lo listado en PROJECT.md §7.7 para sesiones compartidas.
+3. Método de recuperación de contraseña y verificación de correo (forma concreta).
+4. Uso sin conexión de rutinas y ejercicios ya guardados (solo la sesión en curso está garantizada).
+5. Todo lo listado en PROJECT.md §7.7 para sesiones compartidas.

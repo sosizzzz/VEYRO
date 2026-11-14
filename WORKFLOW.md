@@ -219,6 +219,4 @@ La lógica vive en `src/domain/performance/` y no en la interfaz.
 
 1. Comparación serie con serie vs mejor serie cuando el número de series cambia.
 2. Significado de "tiempo": ¿más segundos es mejor o peor? Depende del tipo de ejercicio.
-3. Catálogo de músculos.
-4. Borrado de rutinas.
-5. Si se permite más de una sesión en curso a la vez.
+3. Si se permite más de una sesión en curso a la vez.
