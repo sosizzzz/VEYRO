@@ -114,7 +114,7 @@
 
 ## Fase 4 · Datos y seguridad
 
-**Estado:** En curso. Políticas revisadas en las migraciones 001–005; falta la prueba de aislamiento con 2 cuentas (tarea A-01).
+**Estado:** En curso. Políticas revisadas en las migraciones 001–006; falta la prueba de aislamiento con 2 cuentas (tarea A-01).
 
 **Objetivo:** que todo lo anterior sea seguro y esté bien modelado en la base de datos.
 
@@ -133,6 +133,8 @@
 ---
 
 ## Fase 5 · Motor de sesión (sin pantalla)
+
+**Estado:** En curso. Motor base implementado y con tests en verde (A-02); faltan temporizador y cierre de casos de saltar/omitir (A-03).
 
 **Objetivo:** que el cerebro del entrenamiento funcione y esté probado.
 
