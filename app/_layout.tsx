@@ -70,6 +70,7 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="nueva-contrasena" />
+        <Stack.Screen name="sesion/[sessionId]" />
       </Stack>
     </>
   );

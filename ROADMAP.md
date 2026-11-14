@@ -134,7 +134,7 @@
 
 ## Fase 5 · Motor de sesión (sin pantalla)
 
-**Estado:** Motor completo y con tests en verde (A-02 y A-03): transiciones, saltar/omitir, finalización y temporizador de descanso. Falta conectarlo a la base de datos y a la pantalla (A-04 y A-05).
+**Estado:** Motor completo y con tests en verde (A-02 y A-03): transiciones, saltar/omitir, finalización y temporizador de descanso. Servicios de sesión escritos (A-04): iniciar desde rutina copiando la “foto”, leer/reanudar, guardar series y finalizar/cancelar. Componentes visuales de sesión hechos (M-02) y pantalla de entrenamiento creada (A-05), con botón “Empezar entrenamiento” desde la rutina. Falta aplicar la migración **007** (repara la tabla `session_sets`, que no se creó con la 006) y probar el flujo completo en el móvil.
 
 **Objetivo:** que el cerebro del entrenamiento funcione y esté probado.
 

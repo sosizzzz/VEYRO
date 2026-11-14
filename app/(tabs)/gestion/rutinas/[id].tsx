@@ -7,7 +7,7 @@
  */
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Text } from 'react-native';
+import { ActivityIndicator, Alert, Text, View } from 'react-native';
 
 import { useAuth } from '@/modules/auth';
 import { listActiveExercises, type Exercise } from '@/modules/exercises';
@@ -19,6 +19,7 @@ import {
   saveRoutine,
   type RoutineDraftValues,
 } from '@/modules/routines';
+import { startSessionFromRoutine } from '@/modules/workouts';
 import { Button } from '@/ui/components/Button';
 import { FormMessage } from '@/ui/components/FormMessage';
 import { Screen } from '@/ui/components/Screen';
@@ -36,6 +37,7 @@ export default function EditarRutinaScreen() {
   const [draft, setDraft] = useState<RoutineDraftValues | null>(null);
   // Si la rutina está archivada se puede recuperar, pero no usar para entrenar.
   const [archived, setArchived] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -98,6 +100,27 @@ export default function EditarRutinaScreen() {
       cancelled = true;
     };
   }, [id, ownerId]);
+
+  /**
+   * Inicia un entrenamiento con la versión GUARDADA de la rutina.
+   *
+   * Si acabas de cambiar algo en el formulario y no has pulsado “Guardar”,
+   * esos cambios no se incluyen: la sesión copia lo que hay en Supabase.
+   */
+  async function handleStart() {
+    if (!ownerId || !id) return;
+
+    setStarting(true);
+    setError(null);
+    try {
+      const session = await startSessionFromRoutine(ownerId, id);
+      router.push(`/sesion/${session.id}` as never);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo empezar el entrenamiento.');
+    } finally {
+      setStarting(false);
+    }
+  }
 
   /** Archiva (oculta, no borra) o recupera la rutina, con confirmación al archivar. */
   async function handleArchiveToggle() {
@@ -163,11 +186,21 @@ export default function EditarRutinaScreen() {
           router.back();
         }}
         footer={
-          <Button
-            label={archived ? 'Recuperar rutina' : 'Archivar rutina'}
-            variant="ghost"
-            onPress={handleArchiveToggle}
-          />
+          <View style={{ gap: spacing.sm }}>
+            {!archived ? (
+              <Button
+                label="Empezar entrenamiento"
+                onPress={handleStart}
+                loading={starting}
+                disabled={starting}
+              />
+            ) : null}
+            <Button
+              label={archived ? 'Recuperar rutina' : 'Archivar rutina'}
+              variant="ghost"
+              onPress={handleArchiveToggle}
+            />
+          </View>
         }
       />
     </Screen>
