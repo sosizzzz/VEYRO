@@ -138,8 +138,8 @@ Una tarea no pasa a `Hecho` sin typecheck, tests y prueba manual (ver §10).
 | ID | Tarea | Fase | Depende de | Tamaño | Estado |
 |---|---|---|---|---|---|
 | A-03 | Motor: temporizador, saltar/omitir y finalización + tests | 5 | A-02 | M | Hecho |
-| A-04 | Servicios de sesión: iniciar desde rutina, guardar la “foto”, finalizar y cancelar | 6 | C-02 | M | En revisión (código hecho; falta probar con 006 completo) |
-| M-02 | Componentes de sesión: fila de serie, progreso del ejercicio, temporizador visual | 6 | M-01, CT-06 | M | Pendiente |
+| A-04 | Servicios de sesión: iniciar desde rutina, guardar la “foto”, finalizar y cancelar | 6 | C-02 | M | En revisión (código hecho; falta crear `session_sets` con la 007 y probar) |
+| M-02 | Componentes de sesión: fila de serie, progreso del ejercicio, temporizador visual | 6 | M-01, CT-06 | M | Hecho |
 | M-04 | Dominio `planning`: qué rutinas tocan hoy | 10 | CT-03 | S | Pendiente |
 | M-05 | Pantalla de Inicio: saludo, rutinas de hoy, inicio directo | 10 | M-04, M-01 | M | Pendiente |
 | M-14 | Creación rápida de ejercicio desde la rutina (pendiente de Fase 3) | 3 | — | S | Pendiente |
@@ -150,7 +150,7 @@ Una tarea no pasa a `Hecho` sin typecheck, tests y prueba manual (ver §10).
 
 | ID | Tarea | Fase | Depende de | Tamaño | Estado |
 |---|---|---|---|---|---|
-| A-05 | Pantalla de entrenamiento: cablear motor, objetivos y acciones | 6 | A-03, A-04, M-02, CT-06 | L | Pendiente |
+| A-05 | Pantalla de entrenamiento: cablear motor, objetivos y acciones | 6 | A-03, A-04, M-02, CT-06 | L | En revisión (pantalla hecha; falta probar con la 007) |
 | A-06 | Guardado local inmediato y recuperación al reabrir la app | 6 | A-05 | M | Pendiente |
 | M-06 | Calendario semanal y mensual con colores y número de semana | 10 | M-04, M-01, C-03 | M | Pendiente |
 | M-07 | Historial y detalle de sesión pasada | 8 | CT-05, C-03 | M | Pendiente |
