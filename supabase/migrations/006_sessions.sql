@@ -33,6 +33,9 @@ create table if not exists public.workout_sessions (
   rest_timer_seconds integer not null default 60,
   rest_timer_state text not null default 'detenido',
   rest_timer_remaining integer not null default 60,
+  -- Hora de fin del descanso mientras corre. Permite recalcular el tiempo si
+  -- el móvil se apaga (WORKFLOW.md §6). NULL cuando está detenido o pausado.
+  rest_timer_ends_at timestamptz,
   constraint workout_sessions_mode_check
     check (mode in ('individual', 'compartida')),
   constraint workout_sessions_status_check
@@ -43,6 +46,12 @@ create table if not exists public.workout_sessions (
     check (rest_timer_seconds between 1 and 3600),
   constraint workout_sessions_rest_remaining_check
     check (rest_timer_remaining >= 0),
+  -- Si corre, debe existir una hora de fin; si no corre, no debe haberla.
+  constraint workout_sessions_rest_ends_check
+    check (
+      (rest_timer_state = 'corriendo' and rest_timer_ends_at is not null)
+      or (rest_timer_state <> 'corriendo' and rest_timer_ends_at is null)
+    ),
   -- Una sesión no puede terminar antes de empezar.
   constraint workout_sessions_finished_after_started_check
     check (finished_at is null or finished_at >= started_at)
