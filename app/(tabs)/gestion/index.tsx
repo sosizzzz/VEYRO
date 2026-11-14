@@ -159,13 +159,13 @@ export default function GestionScreen() {
           <MenuCard
             title="Rutinas"
             subtitle="Crea y planifica tus entrenamientos"
-            image={require('../../../../assets/images/card-rutinas.png')}
+            image={require('../../../assets/images/card-rutinas.png')}
             href="/(tabs)/gestion/rutinas"
           />
           <MenuCard
             title="Ejercicios"
             subtitle="Tu catálogo por grupo muscular"
-            image={require('../../../../assets/images/card-ejercicios.png')}
+            image={require('../../../assets/images/card-ejercicios.png')}
             href="/(tabs)/gestion/ejercicios"
           />
         </View>
