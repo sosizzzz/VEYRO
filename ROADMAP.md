@@ -114,7 +114,7 @@
 
 ## Fase 4 · Datos y seguridad
 
-**Estado:** En curso. Políticas revisadas en las migraciones 001–006 y 008; falta ejecutar la prueba de aislamiento con 2 cuentas (tarea A-01). El procedimiento, válido con un solo móvil, está en `docs/PRUEBA_A01.md`.
+**Estado:** En curso. Políticas revisadas en las migraciones 001–006 y 008. La ejecución de la prueba de aislamiento con 2 cuentas (A-01) se ha diferido a petición del jefe de proyecto: **no bloquea las fases 5 a 10**, pero debe hacerse antes de cerrar el MVP o antes de habilitar sesiones compartidas. Procedimiento listo en `docs/PRUEBA_A01.md` (válido con un solo móvil).
 
 **Objetivo:** que todo lo anterior sea seguro y esté bien modelado en la base de datos.
 
