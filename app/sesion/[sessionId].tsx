@@ -10,7 +10,7 @@
  * La pantalla NO decide reglas: pregunta al motor. Así los tests del motor
  * sirven para toda la app.
  */
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, usePreventRemove } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -31,6 +31,7 @@ import {
   type WorkoutEngineState,
 } from '@/domain/workout-engine';
 import { useAuth } from '@/modules/auth';
+import { clearLocalSession, loadLocalSession, saveLocalSession } from '@/data/local';
 import {
   cancelWorkoutSession,
   finishWorkoutSession,
@@ -96,6 +97,47 @@ async function persistChanges(
   await Promise.all(tasks);
 }
 
+/** Convierte el estado del motor en el detalle que se guarda en el móvil. */
+function toWorkoutSessionDetail(state: WorkoutEngineState) {
+  return {
+    ...state.session,
+    participants: state.participants,
+    exercises: state.exercises,
+  };
+}
+
+/**
+ * Guarda primero en el móvil y después en Supabase.
+ *
+ * El orden importa: si se corta la red, el progreso ya está a salvo en el
+ * dispositivo. El aviso de error solo promete eso si el guardado local
+ * funcionó de verdad.
+ */
+async function saveProgress(
+  before: WorkoutEngineState,
+  after: WorkoutEngineState,
+): Promise<void> {
+  let savedOnDevice = false;
+
+  try {
+    await saveLocalSession(toWorkoutSessionDetail(after));
+    savedOnDevice = true;
+  } catch {
+    // Se intenta igualmente la nube; el error de abajo lo explicará.
+  }
+
+  try {
+    await persistChanges(before, after);
+  } catch (cause) {
+    const message = cause instanceof Error ? cause.message : 'Error de conexión.';
+    throw new Error(
+      savedOnDevice
+        ? `No se pudo sincronizar: ${message} Tu progreso sigue guardado en este móvil.`
+        : `No se pudo guardar el progreso: ${message}`,
+    );
+  }
+}
+
 /** Texto legible del estado de un ejercicio. */
 function exerciseStatusLabel(exercise: SessionExerciseWithSets): string {
   if (exercise.status === 'completado') return 'Completado';
@@ -118,6 +160,38 @@ export default function EntrenamientoScreen() {
   const [now, setNow] = useState(nowIso());
   // Copia del estado para que el intervalo lea siempre el último valor.
   const stateRef = useRef<WorkoutEngineState | null>(null);
+  // Cuando la sesión se cierra de forma controlada (finalizar/cancelar) ya no
+  // queremos interceptar el "atrás": el router nos saca normalmente.
+  const [allowExit, setAllowExit] = useState(false);
+
+  /**
+   * El botón físico de Android y el gesto de deslizar de iOS sacan de la
+   * pantalla sin preguntar. Como la sesión sigue en curso, eso dejaría al
+   * usuario fuera sin saber que puede retomarla. `usePreventRemove` (de Expo
+   * Router) bloquea esa salida mientras haya una sesión activa y nos deja
+   * enseñar una confirmación. `repeat()` es la acción de navegación que estaba
+   * bloqueada: solo se ejecuta si el usuario elige salir.
+   */
+  usePreventRemove(
+    state?.session.status === 'en_curso' && !allowExit,
+    ({ repeat }) => {
+      Alert.alert(
+        'Salir del entrenamiento',
+        'La sesión quedará en curso y podrás retomarla desde Inicio.',
+        [
+          { text: 'Seguir entrenando', style: 'cancel' },
+          {
+            text: 'Salir',
+            style: 'destructive',
+            onPress: () => {
+              setAllowExit(true);
+              repeat();
+            },
+          },
+        ],
+      );
+    },
+  );
 
   useEffect(() => {
     if (!sessionId) return;
@@ -126,12 +200,30 @@ export default function EntrenamientoScreen() {
 
     (async () => {
       try {
+        // 1) Primero el móvil: puede tener cambios que aún no llegaron a la nube.
+        const local = await loadLocalSession(sessionId);
+        if (cancelled) return;
+
+        if (local && local.status === 'en_curso') {
+          setState(createWorkoutEngineState(local));
+          return;
+        }
+
+        // 2) Si no hay copia local útil, se pide a Supabase.
         const detail = await getWorkoutSessionDetail(sessionId);
         if (cancelled) return;
         if (!detail) {
           setError('No se encontró la sesión.');
           return;
         }
+
+        // Se cachea para poder reabrirla aunque se caiga la conexión.
+        if (detail.status === 'en_curso') {
+          saveLocalSession(detail).catch(() => {
+            // No es grave: la sesión sigue disponible en la nube.
+          });
+        }
+
         setState(createWorkoutEngineState(detail));
       } catch (cause) {
         if (!cancelled) {
@@ -168,8 +260,10 @@ export default function EntrenamientoScreen() {
       if (!result.ok) return;
 
       setState(result.state);
-      persistChanges(current, result.state).catch((cause) => {
-        setError(cause instanceof Error ? cause.message : 'No se pudo guardar el descanso.');
+      saveProgress(current, result.state).catch((cause) => {
+        setError(
+          cause instanceof Error ? cause.message : 'No se pudo guardar el descanso.',
+        );
       });
     }, 1000);
 
@@ -205,11 +299,11 @@ export default function EntrenamientoScreen() {
     setState(result.state);
 
     try {
-      await persistChanges(state, result.state);
+      await saveProgress(state, result.state);
     } catch (cause) {
       setError(
         cause instanceof Error
-          ? `No se pudo guardar: ${cause.message}`
+          ? cause.message
           : 'No se pudo guardar el progreso.',
       );
     }
@@ -260,11 +354,11 @@ export default function EntrenamientoScreen() {
     setNow(nowIso());
 
     try {
-      await persistChanges(state, nextState);
+      await saveProgress(state, nextState);
     } catch (cause) {
       setError(
         cause instanceof Error
-          ? `No se pudo guardar la serie: ${cause.message}`
+          ? cause.message
           : 'No se pudo guardar la serie.',
       );
     } finally {
@@ -287,6 +381,12 @@ export default function EntrenamientoScreen() {
             setSaving(true);
             try {
               await cancelWorkoutSession(sessionId);
+              // Solo se borra la copia local cuando la nube confirmó.
+              await clearLocalSession(sessionId).catch(() => {
+                // Si fallara, la sesión remota igualmente está cancelada.
+              });
+              // Ya no hay sesión en curso: permitimos la navegación normal.
+              setAllowExit(true);
               router.replace('/(tabs)');
             } catch (cause) {
               setError(cause instanceof Error ? cause.message : 'No se pudo cancelar.');
@@ -318,12 +418,33 @@ export default function EntrenamientoScreen() {
           try {
             const finishedAt = nowIso();
             await finishWorkoutSession(sessionId, finishedAt);
+
+            // La nube ya confirmó el cierre: la copia local ya no hace falta.
+            await clearLocalSession(sessionId).catch(() => {
+              // Si fallara, la sesión remota igualmente está finalizada.
+            });
+
             setState({
               ...state,
               currentExerciseId: null,
               session: { ...state.session, status: 'finalizada', finished_at: finishedAt },
             });
-            router.replace('/(tabs)');
+            // La sesión ya está cerrada: permitimos la navegación normal.
+            setAllowExit(true);
+
+            // Sin este aviso, volver a Inicio parece que “no ha pasado nada”.
+            // La pantalla de resumen llegará en la Fase 8.
+            Alert.alert(
+              'Entrenamiento guardado',
+              'Tu sesión se ha finalizado y guardado correctamente.',
+              [
+                {
+                  text: 'Volver al inicio',
+                  onPress: () => router.replace('/(tabs)'),
+                },
+              ],
+              { cancelable: false },
+            );
           } catch (cause) {
             setError(
               cause instanceof Error ? cause.message : 'No se pudo finalizar la sesión.',
@@ -463,45 +584,35 @@ export default function EntrenamientoScreen() {
               />
             ))}
 
-            <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
-              <View style={{ flex: 1 }}>
-                <Button
-                  label="Saltar ejercicio"
-                  variant="ghost"
-                  disabled={saving}
-                  onPress={() =>
-                    void runEvent({
-                      type: 'EXERCISE_SKIPPED',
-                      exerciseId: currentExercise.id,
-                    })
-                  }
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Button
-                  label="Omitir ejercicio"
-                  variant="ghost"
-                  disabled={saving}
-                  onPress={() =>
-                    Alert.alert(
-                      'Omitir ejercicio',
-                      'Se marcará como omitido en esta sesión. No volverá a aparecer.',
-                      [
-                        { text: 'Cancelar', style: 'cancel' },
-                        {
-                          text: 'Omitir',
-                          style: 'destructive',
-                          onPress: () =>
-                            void runEvent({
-                              type: 'EXERCISE_OMITTED',
-                              exerciseId: currentExercise.id,
-                            }),
-                        },
-                      ],
-                    )
-                  }
-                />
-              </View>
+            {/*
+              Antes había un botón “Saltar ejercicio”. Se quitó porque el
+              selector de arriba ya permite cambiar de ejercicio, y “saltar”
+              no aportaba nada distinto: el ejercicio seguía pendiente.
+            */}
+            <View style={{ marginTop: spacing.md }}>
+              <Button
+                label="Omitir ejercicio"
+                variant="ghost"
+                disabled={saving}
+                onPress={() =>
+                  Alert.alert(
+                    'Omitir ejercicio',
+                    'Se marcará como omitido en esta sesión. No volverá a aparecer.',
+                    [
+                      { text: 'Cancelar', style: 'cancel' },
+                      {
+                        text: 'Omitir',
+                        style: 'destructive',
+                        onPress: () =>
+                          void runEvent({
+                            type: 'EXERCISE_OMITTED',
+                            exerciseId: currentExercise.id,
+                          }),
+                      },
+                    ],
+                  )
+                }
+              />
             </View>
           </View>
         ) : (

@@ -134,7 +134,7 @@
 
 ## Fase 5 · Motor de sesión (sin pantalla)
 
-**Estado:** Motor completo y con tests en verde (A-02 y A-03): transiciones, saltar/omitir, finalización y temporizador de descanso. Servicios de sesión escritos (A-04): iniciar desde rutina copiando la “foto”, leer/reanudar, guardar series y finalizar/cancelar. Componentes visuales de sesión hechos (M-02) y pantalla de entrenamiento creada (A-05), con botón “Empezar entrenamiento” desde la rutina. Falta aplicar la migración **007** (repara la tabla `session_sets`, que no se creó con la 006) y probar el flujo completo en el móvil.
+**Estado:** Motor completo y con tests en verde (A-02 y A-03): transiciones, saltar/omitir, finalización y temporizador de descanso. Servicios de sesión escritos (A-04): iniciar desde rutina copiando la “foto”, leer/reanudar, guardar series y finalizar/cancelar. Componentes visuales de sesión hechos (M-02) y pantalla de entrenamiento creada (A-05), con botón “Empezar entrenamiento” desde la rutina. La migración **007** ya está aplicada y crea `session_sets`. Falta probar el flujo completo en el móvil.
 
 **Objetivo:** que el cerebro del entrenamiento funcione y esté probado.
 
@@ -153,6 +153,8 @@
 ---
 
 ## Fase 6 · Pantalla de entrenamiento
+
+**Estado:** pantalla de entrenamiento, guardado local inmediato y recuperación al reabrir implementados (A-05, A-06). Falta la prueba completa en el móvil: entrenar, cerrar la app a mitad, reabrir y continuar; cancelar con confirmación.
 
 **Objetivo:** entrenar de verdad con el móvil en la mano.
 
