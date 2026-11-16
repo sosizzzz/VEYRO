@@ -3,7 +3,7 @@
 ## Plan de desarrollo por fases
 
 **Regla:** ninguna fase se da por terminada sin sus pruebas. Con dos personas, las fases se trabajan en dos verticales paralelas ([docs/TRABAJO_PARALELO.md](./docs/TRABAJO_PARALELO.md)); cada fase se cierra con su prueba y aprobación, y no se fusiona nada sin revisión.
-**Estado global:** fases 0 a 3 completadas. Fase 4 en verificación (aislamiento con 2 cuentas). Fases 5 a 11 repartidas en dos verticales paralelas.
+**Estado global:** fases 0 a 3 completadas. Fase 4 en verificación (aislamiento con 2 cuentas; guía en `docs/PRUEBA_A01.md`). Fases 5 a 11 repartidas en dos verticales paralelas.
 
 | Estado | Significado |
 |---|---|
@@ -114,7 +114,7 @@
 
 ## Fase 4 · Datos y seguridad
 
-**Estado:** En curso. Políticas revisadas en las migraciones 001–006; falta la prueba de aislamiento con 2 cuentas (tarea A-01).
+**Estado:** En curso. Políticas revisadas en las migraciones 001–006 y 008; falta ejecutar la prueba de aislamiento con 2 cuentas (tarea A-01). El procedimiento, válido con un solo móvil, está en `docs/PRUEBA_A01.md`.
 
 **Objetivo:** que todo lo anterior sea seguro y esté bien modelado en la base de datos.
 
