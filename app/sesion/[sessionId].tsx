@@ -10,7 +10,7 @@
  * La pantalla NO decide reglas: pregunta al motor. Así los tests del motor
  * sirven para toda la app.
  */
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, usePreventRemove } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -160,6 +160,38 @@ export default function EntrenamientoScreen() {
   const [now, setNow] = useState(nowIso());
   // Copia del estado para que el intervalo lea siempre el último valor.
   const stateRef = useRef<WorkoutEngineState | null>(null);
+  // Cuando la sesión se cierra de forma controlada (finalizar/cancelar) ya no
+  // queremos interceptar el "atrás": el router nos saca normalmente.
+  const [allowExit, setAllowExit] = useState(false);
+
+  /**
+   * El botón físico de Android y el gesto de deslizar de iOS sacan de la
+   * pantalla sin preguntar. Como la sesión sigue en curso, eso dejaría al
+   * usuario fuera sin saber que puede retomarla. `usePreventRemove` (de Expo
+   * Router) bloquea esa salida mientras haya una sesión activa y nos deja
+   * enseñar una confirmación. `repeat()` es la acción de navegación que estaba
+   * bloqueada: solo se ejecuta si el usuario elige salir.
+   */
+  usePreventRemove(
+    state?.session.status === 'en_curso' && !allowExit,
+    ({ repeat }) => {
+      Alert.alert(
+        'Salir del entrenamiento',
+        'La sesión quedará en curso y podrás retomarla desde Inicio.',
+        [
+          { text: 'Seguir entrenando', style: 'cancel' },
+          {
+            text: 'Salir',
+            style: 'destructive',
+            onPress: () => {
+              setAllowExit(true);
+              repeat();
+            },
+          },
+        ],
+      );
+    },
+  );
 
   useEffect(() => {
     if (!sessionId) return;
@@ -353,6 +385,8 @@ export default function EntrenamientoScreen() {
               await clearLocalSession(sessionId).catch(() => {
                 // Si fallara, la sesión remota igualmente está cancelada.
               });
+              // Ya no hay sesión en curso: permitimos la navegación normal.
+              setAllowExit(true);
               router.replace('/(tabs)');
             } catch (cause) {
               setError(cause instanceof Error ? cause.message : 'No se pudo cancelar.');
@@ -395,6 +429,8 @@ export default function EntrenamientoScreen() {
               currentExerciseId: null,
               session: { ...state.session, status: 'finalizada', finished_at: finishedAt },
             });
+            // La sesión ya está cerrada: permitimos la navegación normal.
+            setAllowExit(true);
 
             // Sin este aviso, volver a Inicio parece que “no ha pasado nada”.
             // La pantalla de resumen llegará en la Fase 8.
