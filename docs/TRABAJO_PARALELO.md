@@ -75,7 +75,7 @@ Un **contrato** es un archivo pequeño (tipos de TypeScript) que dice *qué form
 | CT-01 | Sesión: `WorkoutSession`, `SessionExercise`, `SessionSet`, estados + SQL `006` | Adrián | ambos | Oleada 1 |
 | CT-02 | Comparación: niveles, colores y resultado por serie | María | Adrián (A-09), María (M-10) | Oleada 1 |
 | CT-03 | Planificación: `TodayPlan`, `CalendarDay` | María | María (M-05, M-06) | Oleada 2 |
-| CT-04 | Sincronización: `SyncOperation`, `SyncState` | Adrián | María (M-08) | Oleada 3 |
+| CT-04 | Sincronización: `SyncOperation`, `SyncState`, `SyncStatus` (en `src/types/sync.ts`) | Adrián | María (M-08) | Oleada 3 |
 | CT-05 | Resumen e historial: `SessionSummary` | Adrián | María (M-07, M-09) | Oleada 3 |
 | CT-06 | Props de los componentes de sesión (`SetRow`, `RestTimer`…) | María | Adrián (A-05) | Oleada 2 |
 
@@ -150,11 +150,11 @@ Una tarea no pasa a `Hecho` sin typecheck, tests y prueba manual (ver §10).
 
 | ID | Tarea | Fase | Depende de | Tamaño | Estado |
 |---|---|---|---|---|---|
-| A-05 | Pantalla de entrenamiento: cablear motor, objetivos y acciones | 6 | A-03, A-04, M-02, CT-06 | L | En revisión (pantalla hecha; falta prueba completa en móvil) |
-| A-06 | Guardado local inmediato y recuperación al reabrir la app | 6 | A-05 | M | En revisión (código y tests; falta probar cierre/reapertura en móvil) |
+| A-05 | Pantalla de entrenamiento: cablear motor, objetivos y acciones | 6 | A-03, A-04, M-02, CT-06 | L | Hecho (probada en móvil por Adrián) |
+| A-06 | Guardado local inmediato y recuperación al reabrir la app | 6 | A-05 | M | Hecho (probada en móvil: cerrar y retomar) |
 | M-06 | Calendario semanal y mensual con colores y número de semana | 10 | M-04, M-01, C-03 | M | Pendiente |
 | M-07 | Historial y detalle de sesión pasada | 8 | CT-05, C-03 | M | Pendiente |
-| M-08 | Indicador de sincronización (pendiente / sincronizado) | 7 | CT-04, M-01 | S | Pendiente |
+| M-08 | Indicador de sincronización (pendiente / sincronizado) | 7 | CT-04, M-01 | S | Hecho (código y tests; falta prueba en móvil) |
 
 **Criterio de salida:** entrenar, cerrar la app a mitad y recuperar la sesión; el historial y el calendario pintan datos falsos o reales.
 
@@ -162,7 +162,7 @@ Una tarea no pasa a `Hecho` sin typecheck, tests y prueba manual (ver §10).
 
 | ID | Tarea | Fase | Depende de | Tamaño | Estado |
 |---|---|---|---|---|---|
-| A-07 | Cola de sincronización: reintentos, idempotencia y estado | 7 | A-06, CT-04 | L | Pendiente |
+| A-07 | Cola de sincronización: reintentos, idempotencia y estado (finalizar/cancelar quedan como acciones directas) | 7 | A-06, CT-04 | L | Hecho (código y 59 tests; falta prueba en modo avión) |
 | A-08 | Resumen: cálculo de totales (duración, completados, omitidos, series) | 8 | A-05, CT-05 | S | Pendiente |
 | A-09 | Integrar la comparación de rendimiento en la sesión | 9 | M-03, A-05 | M | Pendiente |
 | M-09 | Pantalla de resumen al finalizar | 8 | CT-05, M-01 | M | Pendiente |

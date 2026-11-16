@@ -31,14 +31,19 @@ import {
   type WorkoutEngineState,
 } from '@/domain/workout-engine';
 import { useAuth } from '@/modules/auth';
-import { clearLocalSession, loadLocalSession, saveLocalSession } from '@/data/local';
 import {
+  clearLocalSession,
+  enqueueSyncOperations,
+  loadLocalSession,
+  saveLocalSession,
+} from '@/data/local';
+import { useSync } from '@/modules/sync';
+import {
+  buildSyncOperations,
   cancelWorkoutSession,
   finishWorkoutSession,
+  flushSyncQueue,
   getWorkoutSessionDetail,
-  saveSessionExerciseStatus,
-  saveSessionSetResult,
-  saveWorkoutSession,
 } from '@/modules/workouts';
 import { Button } from '@/ui/components/Button';
 import { FormMessage } from '@/ui/components/FormMessage';
@@ -57,46 +62,6 @@ function nowIso(): string {
   return new Date().toISOString();
 }
 
-/** ¿Cambió algún dato visible de la serie? Sirve para no guardar de más. */
-function setChanged(before: SessionSet, after: SessionSet): boolean {
-  return (
-    before.status !== after.status ||
-    before.actual_weight !== after.actual_weight ||
-    before.actual_reps !== after.actual_reps ||
-    before.actual_time_seconds !== after.actual_time_seconds ||
-    before.completed_at !== after.completed_at
-  );
-}
-
-/**
- * Guarda en Supabase solo lo que cambió entre dos estados del motor.
- *
- * No hay transacción multi-tabla en el cliente, pero cada fila se actualiza
- * por separado y las operaciones son idempotentes: reintentar no duplica.
- */
-async function persistChanges(
-  before: WorkoutEngineState,
-  after: WorkoutEngineState,
-): Promise<void> {
-  const tasks: Promise<void>[] = [saveWorkoutSession(after.session)];
-
-  for (const exercise of after.exercises) {
-    const previousExercise = before.exercises.find((item) => item.id === exercise.id);
-    if (previousExercise && previousExercise.status !== exercise.status) {
-      tasks.push(saveSessionExerciseStatus(exercise.id, exercise.status));
-    }
-
-    for (const set of exercise.sets) {
-      const previousSet = previousExercise?.sets.find((item) => item.id === set.id);
-      if (previousSet && setChanged(previousSet, set)) {
-        tasks.push(saveSessionSetResult(set));
-      }
-    }
-  }
-
-  await Promise.all(tasks);
-}
-
 /** Convierte el estado del motor en el detalle que se guarda en el móvil. */
 function toWorkoutSessionDetail(state: WorkoutEngineState) {
   return {
@@ -107,34 +72,33 @@ function toWorkoutSessionDetail(state: WorkoutEngineState) {
 }
 
 /**
- * Guarda primero en el móvil y después en Supabase.
+ * Guarda primero en el móvil y después apunta en la cola los cambios que debe
+ * enviar Supabase (A-07).
  *
  * El orden importa: si se corta la red, el progreso ya está a salvo en el
- * dispositivo. El aviso de error solo promete eso si el guardado local
- * funcionó de verdad.
+ * dispositivo y la cola se enviará sola cuando vuelva la conexión. Ya no
+ * mostramos un error rojo por falta de red: el indicador de sincronización se
+ * encarga de explicarlo sin asustar.
  */
 async function saveProgress(
   before: WorkoutEngineState,
   after: WorkoutEngineState,
 ): Promise<void> {
+  const ownerId = after.session.owner_id;
   let savedOnDevice = false;
 
   try {
     await saveLocalSession(toWorkoutSessionDetail(after));
     savedOnDevice = true;
   } catch {
-    // Se intenta igualmente la nube; el error de abajo lo explicará.
+    // Se intenta igualmente la cola; el error de abajo lo explicará.
   }
 
-  try {
-    await persistChanges(before, after);
-  } catch (cause) {
-    const message = cause instanceof Error ? cause.message : 'Error de conexión.';
-    throw new Error(
-      savedOnDevice
-        ? `No se pudo sincronizar: ${message} Tu progreso sigue guardado en este móvil.`
-        : `No se pudo guardar el progreso: ${message}`,
-    );
+  await enqueueSyncOperations(buildSyncOperations(before, after));
+  await flushSyncQueue(ownerId);
+
+  if (!savedOnDevice) {
+    throw new Error('No se pudo guardar el progreso en este móvil.');
   }
 }
 
@@ -150,6 +114,7 @@ export default function EntrenamientoScreen() {
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
   const router = useRouter();
   const { user } = useAuth();
+  const { pendingCount } = useSync();
   const { colors, spacing, radius, typography } = useTheme();
 
   const [state, setState] = useState<WorkoutEngineState | null>(null);
@@ -497,6 +462,13 @@ export default function EntrenamientoScreen() {
         keyboardShouldPersistTaps="handled"
       >
         {error ? <FormMessage tone="error">{error}</FormMessage> : null}
+
+        {/* A-07: si la red falló, el progreso no se perdió; solo espera su turno. */}
+        {pendingCount > 0 ? (
+          <FormMessage tone="info">
+            Cambios guardados en el móvil. Se enviarán automáticamente cuando vuelva la conexión.
+          </FormMessage>
+        ) : null}
 
         <RestTimer
           remainingSeconds={restRemaining}

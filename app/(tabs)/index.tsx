@@ -21,6 +21,7 @@ import {
 import { Button } from '@/ui/components/Button';
 import { FormMessage } from '@/ui/components/FormMessage';
 import { Screen } from '@/ui/components/Screen';
+import { SyncIndicator } from '@/ui/components/sync';
 import { useTheme } from '@/ui/theme';
 
 /** Hora local legible, por ejemplo “20:35”. */
@@ -130,6 +131,9 @@ export default function InicioScreen() {
           : 'Aquí aparecerán las rutinas que te toquen hoy.'
       }
     >
+      {/* M-08: el usuario ve siempre si sus cambios ya llegaron a la nube. */}
+      <SyncIndicator />
+
       {loading ? (
         <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
       ) : error ? (
