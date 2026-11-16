@@ -20,6 +20,7 @@ import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider, useAuth } from '@/modules/auth';
+import { SyncProvider } from '@/modules/sync';
 import { LoadingScreen } from '@/ui/components/LoadingScreen';
 
 // Permite que Expo Router capture errores de cualquier pantalla y muestre
@@ -43,7 +44,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <RootNavigator />
+        <SyncProvider>
+          <RootNavigator />
+        </SyncProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );

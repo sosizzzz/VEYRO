@@ -3,7 +3,7 @@
 ## Plan de desarrollo por fases
 
 **Regla:** ninguna fase se da por terminada sin sus pruebas. Con dos personas, las fases se trabajan en dos verticales paralelas ([docs/TRABAJO_PARALELO.md](./docs/TRABAJO_PARALELO.md)); cada fase se cierra con su prueba y aprobación, y no se fusiona nada sin revisión.
-**Estado global:** fases 0 a 3 completadas. Fase 4 en verificación (aislamiento con 2 cuentas; guía en `docs/PRUEBA_A01.md`). Fases 5 a 11 repartidas en dos verticales paralelas.
+**Estado global:** fases 0 a 3 completadas. Fase 4 en verificación (aislamiento con 2 cuentas; guía en `docs/PRUEBA_A01.md`). Fase 7 con código listo y prueba en modo avión pendiente. Fases 5 a 11 repartidas en dos verticales paralelas.
 
 | Estado | Significado |
 |---|---|
@@ -177,6 +177,8 @@
 
 ## Fase 7 · Sincronización y resiliencia
 
+**Estado:** cola e indicador implementados (A-07 y M-08). Falta la prueba en móvil con modo avión; hasta entonces no se da por cerrada.
+
 **Objetivo:** que no se pierda nada y no se duplique nada.
 
 **Entregables**
@@ -185,7 +187,10 @@
 - Sincronización al recuperar conexión y al abrir la app.
 - Reintentos con control de errores.
 - Estado visible: pendiente de sincronizar o sincronizado.
-- Pruebas en modo avión.
+
+**Nota de alcance:** la cola cubre cambios de series, estados de ejercicios y temporizador. Finalizar y cancelar siguen siendo acciones directas: solo se confirman en pantalla cuando Supabase responde, para no dar por terminada una sesión sin confirmación del servidor.
+
+**Prueba pendiente:** modo avión.
 
 **Cómo se prueba:** modo avión, registrar varias series, cerrar la app, activar red, abrir: todo aparece una sola vez en Supabase.
 

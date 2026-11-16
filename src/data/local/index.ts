@@ -10,3 +10,11 @@ export {
   loadLocalSession,
   saveLocalSession,
 } from './sessionStorage';
+export {
+  clearSyncQueue,
+  countSyncOperations,
+  enqueueSyncOperations,
+  listSyncOperations,
+  removeSyncOperations,
+  updateSyncOperation,
+} from './syncQueue';
